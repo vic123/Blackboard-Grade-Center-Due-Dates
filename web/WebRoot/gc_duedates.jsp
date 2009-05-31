@@ -504,7 +504,7 @@ try {
 								+ sessionTag.warningMessage 
 								+ "</font></p>");
 	//					sessionTag.warningMessage = "";
-						session.removeAttribute(sessionTag.randomUUID);
+//-causes error upon reorder						session.removeAttribute(sessionTag.randomUUID);
 					} else out.print ("<p> <font color=\"#00FF00\">" + "SAVE SUCCESSFULL" + "</font></p>");
 	//				sessionTag.saveDone = false;
 				}	
