@@ -2,10 +2,10 @@
 <manifest>
   <!-- core extension information -->
   <plugin>
-    <name value= "Grade Center Due Dates v.0.3"/>
-    <handle value= "gradecenter_duedates_0.3"/>
+    <name value= "Grade Center Due Dates v.0.5"/>
+    <handle value= "gradecenter_duedates_0.5"/>
     <description value= "Grade Center Due Dates"/>
-    <version value= "0.3"/>
+    <version value= "0.5"/>
     
     <requires>
     	<bbversion value="9.0"/>
@@ -25,7 +25,7 @@
     <!-- Tools defined by this extension -->
     <application-defs>
       <application 	name="Grade Center Due Dates"
-      				handle="gradecenter_duedates" 
+      				handle="gradecenter_duedates_v.0.5" 
       				type="shared" 
       				use-ssl="false" 
       				is-sys-tool="false" 
@@ -39,7 +39,7 @@
         <links>
 		  <link>
             <type value="course_tool"/>
-            <name value="Set Grade Center Due Dates v.0.3"/>
+            <name value="Set Grade Center Due Dates v.0.5"/>
             <url value="gc_duedates.jsp" />
             <description value="Grade Center Due Dates" />
             <icons>
@@ -52,10 +52,7 @@
      
     <!-- code permissions required for proper operation -->
     <permissions>
-      <permission type="attribute" name="user.authinfo" actions="get"/>
-	  <permission type="attribute" name="user.personalinfo" actions="get" />
-	  <permission type="attribute" name="Group" actions="get"/>
-	  <permission type="attribute" name="GroupMembership" actions="get"/>
+    	<permission type="attribute" name="user.authinfo" actions="get"/>
     </permissions>
   </plugin>
 </manifest>
