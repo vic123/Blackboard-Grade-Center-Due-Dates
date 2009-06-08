@@ -24,7 +24,7 @@
 <%@ taglib uri="/bbUI" prefix="bbUI"%>
 <%@ taglib uri="/bbData" prefix="bbData"%>
 <%@ taglib uri="/bbNG" prefix="bbNG"%>
-<%@ taglib uri="http://java.sun.com/jstl/core"    prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core"    prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"     prefix="fmt"%>
 
 <!-- gc_duedates.jsp -->
@@ -37,30 +37,32 @@
 	//without necessity of modifying of server log settings
 	//assumes that active server log level is at least WARNING 
 	void logForward(LogService.Verbosity verbosity, String message) {
-		message = "IDLA.gradecenter_duedates	" + message;
+		strLogMessages = strLogMessages + "<br>" + verbosity.toExternalString() + "	" + message  ;
+		message = "IDLA.gradecenter_duedates	" + verbosity.toExternalString() + "	Session: " + servletSession.getId() + "	" + message;
 		//using higher severity log level for easier development testing, log is overfilled when all messages are of debug level
 		//actual log.logWarning has to be commented out in production release, but may be uncommented for collecting of log messages  
 		if (verbosity.getLevelAsInt() > LogService.Verbosity.WARNING.getLevelAsInt()) {
-			log.logWarning(message);
+			//log.logWarning(message);
 		}
 		log.log(message, verbosity);
-		strLogMessages = strLogMessages + verbosity.toString() + "	" + message + "<br>" ;
+		
+		
 		//log.log("strLogMessages: " + strLogMessages, verbosity);    
 	}
 	void logForward(LogService.Verbosity verbosity, java.lang.Throwable error, String message) {
-		message = "IDLA.gradecenter_duedates	" + message;
-		//using higher severity log level for easier development testing, log is overfilled when all messages are of debug level
-		//actual log.logWarning has to be commented out in production release, but may be uncommented for collecting of log messages  
-		if (verbosity.getLevelAsInt() > LogService.Verbosity.WARNING.getLevelAsInt()) {
-			log.logWarning(message, error);
-		}
-		log.log(message, error, verbosity);
 		strLogMessages = strLogMessages + verbosity.toString() + "	" + message + "<br>" ;
 		strLogMessages = strLogMessages + verbosity.toString() + "	" + error.getMessage() + "<br>" ;
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw, true);
 		error.printStackTrace(pw);
 		strLogMessages = strLogMessages + verbosity.toString() + "	" + sw.toString() + "<br>" ;
+		message = "IDLA.gradecenter_duedates	Session: " + servletSession.getId() + "	" + message;
+		//using higher severity log level for easier development testing, log is overfilled when all messages are of debug level
+		//actual log.logWarning has to be commented out in production release, but may be uncommented for collecting of log messages  
+		if (verbosity.getLevelAsInt() > LogService.Verbosity.WARNING.getLevelAsInt()) {
+			log.logWarning(message, error);
+		}
+		log.log(message, error, verbosity);
 		//log.log("strLogMessages: " + strLogMessages, verbosity);
 	}
 
@@ -79,6 +81,7 @@
 	String formURL;
 	HttpServletRequest servletRequest;
 	HttpServletResponse servletResponse;
+	HttpSession			servletSession;
 	
 	static final String liDueDateParamNameBase = "liDueDateParam_";
 	static final String liIdParamNameBase = "liIdParam_";
@@ -131,11 +134,13 @@
 		long lMinutesCount;
 		
 		public int DueDateOrder; //used just for indexing, contains initial DueDateOrder, can become incrrect after save, but it should not influence behavior
+		public boolean isDueDateConstructed; //quick flagging solution to avoid 2 datepicker controls to be created for one of the rows (first row is passed twice by InventoryList
 		int paramIndex;
 		List<LineItemField> fieldsList;
 
 		public LineitemHelper(Lineitem liPrev_, Lineitem lineitem_) {
 			strRowStatus = "";
+			isDueDateConstructed = false;
 			liPrev = liPrev_;
 			lineitem = lineitem_;
 			assert (lineitem_ != null);
@@ -251,10 +256,11 @@
 <bbNG:learningSystemPage  ctxId="ctx">
 <%
 try {
-
 	strLogMessages = "";
+	servletSession = session;
+	logForward(LogService.Verbosity.INFORMATION, "session.getId(): " + session.getId());
+	
 	strSaveWarnings = "";
-
 	servletRequest = request;
 	servletResponse = response;
 
@@ -583,8 +589,8 @@ try {
 		String liHasDueDateParamName;
 		String liIsAvailableParamName;
 		String liNameParamName;
+		boolean isDueDateFirstPass = true;
 	%>
-	
 	<bbNG:step title="Time part of all due dates" instructions="Please specify if you would like to set time of all due dates to same value during submit">
 		<%
 		commonDueTime = java.util.Calendar.getInstance();
@@ -665,15 +671,20 @@ try {
 		<bbNG:listElement 
 			comparator="<%=cmSortByDueDate%>"		
 			label="Due Date" 
-			name="DueDate" >
-			<bbNG:dataElement>
-				<bbNG:datePicker
-					baseFieldName = "<%= liDueDateParamName %>" 
-					dateTimeValue="<%= calDueDate %>"
-					showTime="true"
-				/>
-			</bbNG:dataElement>
-			<% logForward(LogService.Verbosity.DEBUG, "Due Date - li_index: " + li_index); %>
+			name="DueDate" > 
+			<c:if test="<%=!isDueDateFirstPass%>">
+				<bbNG:dataElement>
+					<bbNG:datePicker
+						baseFieldName = "<%= liDueDateParamName %>" 
+						dateTimeValue="<%= calDueDate %>"
+						showTime="true"
+					/>
+				</bbNG:dataElement>
+			</c:if >
+			<% 	logForward(LogService.Verbosity.DEBUG, "Due Date - li_index: " + li_index);
+				logForward(LogService.Verbosity.DEBUG, "lineitemHelperHash.get(li.getId().toExternalString()).isDueDateConstructed: " + lineitemHelperHash.get(li.getId().toExternalString()).isDueDateConstructed);
+				isDueDateFirstPass = false;
+			%>
 		</bbNG:listElement>
 	</bbNG:inventoryList>	
 	</bbNG:step> 
@@ -681,7 +692,7 @@ try {
 	<!--  Cancel will bring us out of the form (back), only submit (and refresh?) will refresh it here - actually temp solution, has to be implemented with javascript-->
   <bbNG:stepSubmit title="Submit"  instructions="Click Submit to save and reload. Click Cancel to abandon changes and restore original data. Use regular Blackboard menu to navigate away from the building block (unsubmitted changes will be lost)." cancelOnClick="<%=javascriptCancelOnClick  %>">
   </bbNG:stepSubmit>
-	
+    Description of plugin processing is available <a href="http://projects.oscelot.org/gf/project/gc_duedates/wiki/?pagename=Grade+Center+Due+Dates+Building+Block+Description">here</a>.	
 </bbNG:dataCollection> 
 </bbNG:form>
 
