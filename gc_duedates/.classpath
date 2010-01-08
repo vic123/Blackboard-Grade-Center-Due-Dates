@@ -4,11 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="melibrary.com.genuitec.eclipse.j2eedt.core.MYECLIPSE_JAVAEE_5_CONTAINER"/>
 	<classpathentry kind="con" path="melibrary.com.genuitec.eclipse.cross.easystruts.eclipse.STRUTS13_CONTAINER"/>
-	<classpathentry kind="lib" path="lib"/>
-	<classpathentry kind="lib" path="lib/standard.jar"/>
-	<classpathentry kind="lib" path="lib/bb-platform.jar"/>
-	<classpathentry kind="lib" path="lib/bb-taglibs.jar"/>
-	<classpathentry kind="lib" path="lib/jstl.jar"/>
-	<classpathentry kind="lib" path="D:/Inetpub/ftproot/gc_duedates/lib/bb-taglibs.jar"/>
+	<classpathentry kind="lib" path="W:/Blackboard/src/_svn/lib/v.9.0/bb-taglibs.jar"/>
+	<classpathentry kind="lib" path="W:/Blackboard/src/_svn/lib/v.9.0/bb-platform.jar"/>
 	<classpathentry kind="output" path="WebRoot/WEB-INF/classes"/>
 </classpath>

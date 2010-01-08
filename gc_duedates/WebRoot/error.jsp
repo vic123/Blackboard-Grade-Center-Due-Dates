@@ -4,7 +4,9 @@
 
 <% 
 	String PAGE_TITLE = "Grade Center Due Dates";
-	String ICON_URL = PlugInUtil.getUri( "IDLA", "gradecenter_duedates", "DueDates.jpg"); 
+	String ICON_URL = PlugInUtil.getUri( "IDLA", "gradecenter_duedates", "DueDates.jpg");
+	String courseIdParameter = (String)request.getSession().getAttribute("course_id");
+	String urlCrtlPanelPage = "/bin/common/control_panel.pl?course_id=" + courseIdParameter;
 %>
 <bbNG:learningSystemPage>
 <bbNG:form >
@@ -20,13 +22,25 @@
 <p>An unhandled exception occurred, if you think this is a bug then please create 
 <a href="http://projects.oscelot.org/gf/project/gc_duedates/tracker/">bug-tracker</a> 
 entry and supplement (copy/paste) text from this page. It contains exception message, stack trace, any form request parameters and list of log messages collected after page reload.</p>
-<b><%=exception.getCause().getMessage()%></b><br>
-<pre>
 <%
-	//display a stack trace of the exception
-	out.print ("<b>Stack trace: </b>" );
+if (exception != null) {
 	PrintWriter pw = new PrintWriter( out );
-	exception.getCause().printStackTrace( pw );
+	if (exception.getCause() != null) {
+		out.print("<b><br>exception.getCause(): " + exception.getCause().getMessage() + "</b><br>");
+		out.print ("Exception Cause Stack trace: <br><pre>" );
+		exception.getCause().printStackTrace( pw );
+		out.print("</pre>");
+	}
+	out.print("<br><b>exception.getMessage(): " + exception.getMessage() + "</b><br>");
+	//display a stack trace of the exception
+	out.print ("Exception Stack trace: <br><pre>" );
+	exception.printStackTrace( pw );		
+	out.print("</pre>");
+} else  out.print("Exception is null");
+%>
+<br>
+
+<%
 
 	out.print ("<br> <b>Parameters: </b> <br>" );
 
@@ -57,6 +71,5 @@ entry and supplement (copy/paste) text from this page. It contains exception mes
 	out.print ("<br> <b>Log: </b> <br>" );
 	out.print (exception.getMessage());   
 %>
-</pre>
 </bbNG:form>
 </bbNG:learningSystemPage>

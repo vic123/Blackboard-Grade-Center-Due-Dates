@@ -3,7 +3,7 @@
   type="WEB"
   name="gc_duedates"
   id="myeclipse.1242132935843"
-  context-root="/gc_duedates-0.3"
+  context-root="/gc_duedates"
   j2ee-spec="1.4"
   archive="gc_duedates.war">
   <attributes>
