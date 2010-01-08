@@ -1,4 +1,4 @@
-<%@ taglib uri="/bbNG" prefix="bbNG"%>
+<%@ taglib uri="/bbUI" prefix="bbUI"%>
 <%@ page import="java.io.PrintWriter, java.lang.reflect.Array, java.util.*, blackboard.platform.plugin.PlugInUtil" %>
 <%@ page isErrorPage = "true" %>
 
@@ -8,16 +8,18 @@
 	String courseIdParameter = (String)request.getSession().getAttribute("course_id");
 	String urlCrtlPanelPage = "/bin/common/control_panel.pl?course_id=" + courseIdParameter;
 %>
-<bbNG:learningSystemPage>
-<bbNG:form >
-    <bbNG:breadcrumbBar environment="CTRL_PANEL">
-    	<bbNG:breadcrumb><%= PAGE_TITLE%></bbNG:breadcrumb>
-    </bbNG:breadcrumbBar>
-	<bbNG:pageHeader>
-	    <bbNG:pageTitleBar iconUrl="<%=ICON_URL%>">
+<bbUI:docTemplateBody>
+<FORM>
+    <bbUI:breadcrumbBar environment="CTRL_PANEL">
+      <bbUI:breadcrumb
+        href="<%=urlCrtlPanelPage%>">
+        Control Panel
+      </bbUI:breadcrumb>
+    	<bbUI:breadcrumb><%= PAGE_TITLE%></bbUI:breadcrumb>
+    </bbUI:breadcrumbBar>
+	    <bbUI:titleBar iconUrl="<%=ICON_URL%>">
     	    <%= PAGE_TITLE %>
-    	</bbNG:pageTitleBar>
-    </bbNG:pageHeader>
+    	</bbUI:titleBar>
 
 <p>An unhandled exception occurred, if you think this is a bug then please create 
 <a href="http://projects.oscelot.org/gf/project/gc_duedates/tracker/">bug-tracker</a> 
@@ -71,5 +73,5 @@ if (exception != null) {
 	out.print ("<br> <b>Log: </b> <br>" );
 	out.print (exception.getMessage());   
 %>
-</bbNG:form>
-</bbNG:learningSystemPage>
+</FORM>
+</bbUI:docTemplateBody>

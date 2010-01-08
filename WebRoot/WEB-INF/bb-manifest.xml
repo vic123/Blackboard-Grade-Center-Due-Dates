@@ -2,13 +2,13 @@
 <manifest>
   <!-- core extension information -->
   <plugin>
-    <name value= "Grade Center Due Dates"/>
-    <handle value= "gradecenter_duedates"/>
+    <name value= "Grade Center Due Dates BB7"/>
+    <handle value= "gradecenter_duedates_BB7"/>
     <description value= "Grade Center Due Dates"/>
     <version value= "0.7"/>
     
     <requires>
-    	<bbversion value="9.0"/>
+    	<bbversion value="7.3"/>
     </requires>
     
     <vendor>
@@ -24,17 +24,18 @@
         
     <!-- Tools defined by this extension -->
     <application-defs>
-      <application 	name="Grade Center Due Dates"
-      				handle="gradecenter_duedates" 
+      <application 	name="Grade Center Due Dates BB7"
+      				handle="gradecenter_duedates_BB7" 
       				type="shared" 
       				use-ssl="false" 
-      				is-sys-tool="false" 
-      				is-course-tool="true" 
-      				is-org-tool="false" 
-      				is-group-tool="false"
 	              	can-allow-guest="false" 
 	              	small-icon="images/tools_u.gif" 
 	              	large-icon="images/tools.jpg">
+<!--      				is-sys-tool="false" 
+      				is-course-tool="true" 
+      				is-org-tool="true" 
+      				is-group-tool="false"
+-->        
         <description lang="en_US">Grade Center Due Dates</description>
         <links>
 		  <link>

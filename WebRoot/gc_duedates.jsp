@@ -6,7 +6,7 @@
 				java.util.Calendar,
 				java.io.StringWriter,
 				java.io.PrintWriter,
-				blackboard.data.user.*, 
+				blackboard.data.user.*,
 				blackboard.data.course.*,
 				blackboard.data.gradebook.*,
 				blackboard.data.ReceiptOptions,
@@ -17,10 +17,12 @@
 				blackboard.platform.log.*,
 				blackboard.platform.persistence.PersistenceServiceFactory,  
 				blackboard.platform.plugin.PlugInUtil,
-				blackboard.platform.BbServiceManager,
 				blackboard.db.DbUtil, 
+				blackboard.servlet.tags.DatePickerTag,
 				blackboard.servlet.tags.InlineReceiptTag, 
+				blackboard.servlet.data.DatePicker, 
 				blackboard.platform.context.Context,
+				blackboard.platform.context.ContextManager,
 				blackboard.platform.context.ContextManagerFactory"
 		errorPage="error.jsp"           
 		pageEncoding="UTF-8" 
@@ -30,7 +32,6 @@
  
 <%@ taglib uri="/bbUI" prefix="bbUI"%>
 <%@ taglib uri="/bbData" prefix="bbData"%>
-<%@ taglib uri="/bbNG" prefix="bbNG"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core"    prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"     prefix="fmt"%>
 
@@ -59,7 +60,7 @@
 		//using higher severity log level for easier development testing, log is overfilled when all messages are of debug level
 		//actual log.logWarning has to be commented out in production release, but may be uncommented for collecting of log messages  
 		if (verbosity.getLevelAsInt() > LogService.Verbosity.WARNING.getLevelAsInt()) {
-			//!! log.logWarning(message); 
+			log.logWarning(message); //!!
 		}
 		log.log(message, verbosity);
 	}
@@ -74,7 +75,7 @@
 		//using higher severity log level for easier development testing, log is overfilled when all messages are of debug level
 		//actual log.logWarning has to be commented out in production release, but may be uncommented for collecting of log messages  
 		if (verbosity.getLevelAsInt() > LogService.Verbosity.WARNING.getLevelAsInt()) {
-			//!!log.logWarning(message, error); 
+			log.logWarning(message, error); //!!
 		}
 		log.log(message, error, verbosity);
 	}
@@ -215,7 +216,29 @@
 			}
 		} //private class  LineItemIsAvailable extends LineItemField {
 
-		private class  LineItemDueDateField extends LineItemField {
+		private class  LineItemDateField extends LineItemField {
+			LineItemDateField(String paramName_) {
+				super(paramName_);
+				Calendar cal = Calendar.getInstance();
+				String s_yyyy = servletRequest.getParameter(paramName+"_yyyy");
+				String s_mm = servletRequest.getParameter(paramName+"_mm");
+				String s_dd = servletRequest.getParameter(paramName+"_dd");
+				String s_hh = servletRequest.getParameter(paramName+"_hh");
+				String s_mi = servletRequest.getParameter(paramName+"_mi");
+				String s_am = servletRequest.getParameter(paramName+"_am");
+				logForward(LogService.Verbosity.DEBUG, paramName_ + " s_yyyy: " + s_yyyy + "; s_mm: " + s_mm
+							 + "; s_dd: " + s_dd + "; s_hh: " + s_hh + "; s_mi: " + s_mi + "; s_am: " + s_am);
+				if (s_yyyy != null) cal.set(Calendar.YEAR, Integer.parseInt(s_yyyy));
+				if (s_mm != null) cal.set(Calendar.MONTH, Integer.parseInt(s_mm) - 1);
+				if (s_dd != null) cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s_dd));
+				if (s_am != null) cal.set(Calendar.AM_PM, Integer.parseInt(s_am));
+				//cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s_hh) + 12 * Integer.parseInt(s_hh));
+				if (s_hh != null) cal.set(Calendar.HOUR, Integer.parseInt(s_hh));
+				if (s_mi != null) cal.set(Calendar.MINUTE, Integer.parseInt(s_mi));
+				value = DbUtil.calendarToString(cal);
+			}
+		}
+		private class  LineItemDueDateField extends LineItemDateField {
 			LineItemField liHasDueDate;
 			LineItemField isCommonDueTime;
 			LineItemField commonDueTime;
@@ -223,7 +246,7 @@
 				super(paramName_);			
 				liHasDueDate = new LineItemField(liHasDueDateParamNameBase + LineitemHelper.this.paramIndex);
 				isCommonDueTime = new LineItemField("isCommonDueTimeParam");
-				commonDueTime = new LineItemField("commonDueTimeParam_datetime");
+				commonDueTime = new LineItemDateField("commonDueTimeParam_0");
 			}
 			
 			void checkAndSetInternal() throws GCDuedatesException {
@@ -508,7 +531,7 @@ try {
 				LineItemField lif = lih.new LineItemIsAvailableField(liIsAvailableParamNameBase + i);
 				lih.fieldsList = new ArrayList<LineItemField>();
 				lih.fieldsList.add(lif);
-					lif = lih.new LineItemDueDateField(liDueDateParamNameBase + i + "_datetime");  
+				lif = lih.new LineItemDueDateField(liDueDateParamNameBase + "_" + i);  
 				lih.fieldsList.add(lif);
 				for (LineItemField lif_temp: lih.fieldsList) {
 					lif_temp.checkAndSet();
@@ -555,8 +578,13 @@ try {
 
 //3)Construction of response       
 %>
-<bbNG:learningSystemPage>
-<bbNG:form name="idlaGCDueDatesForm" method="post" action="gc_duedates.jsp" >
+<bbData:context entitlement="course.control_panel.VIEW">
+<bbUI:docTemplateHead title="Grade Center Due Dates" >
+</bbUI:docTemplateHead>
+	
+<bbUI:docTemplateBody>
+<!--request.getRequestURL().toString()    -->
+<FORM ACTION="gc_duedates.jsp?idlaGCDueDatesActionParam=save" name="idlaGCDueDatesForm" METHOD="POST" onsubmit="return onFormSubmit()">
 
 	<input type="hidden" name="course_id" id="course_id" value="<%= courseIdParameter%>"/>
 	<input type="hidden" name="idlaGCDueDatesActionParam" id="idlaGCDueDatesActionParam" value="save"/> 
@@ -570,23 +598,23 @@ try {
 	//		return true;
 	//  	}
 	</script>
-	<bbNG:dataCollection markUnsavedChanges="false">
 	<%
 	try {      
 		//this link does not work in BB v.9
 		String urlCrtlPanelPage = "/bin/common/control_panel.pl?course_id=" + courseIdParameter;
 	%>
-	
-    <bbNG:breadcrumbBar environment="CTRL_PANEL">
-    	<bbNG:breadcrumb><%= PAGE_TITLE%></bbNG:breadcrumb>
-    </bbNG:breadcrumbBar>
-    <bbNG:receipt />    
-	<bbNG:pageHeader>
-	    <bbNG:pageTitleBar iconUrl="<%=ICON_URL%>">
-   	    <%= PAGE_TITLE %>
-    	</bbNG:pageTitleBar>
-    </bbNG:pageHeader>
 
+    <bbUI:breadcrumbBar environment="CTRL_PANEL">
+		<bbUI:breadcrumb
+			href="<%=urlCrtlPanelPage%>">
+			Control Panel
+		</bbUI:breadcrumb>
+		<bbUI:breadcrumb><%= PAGE_TITLE%></bbUI:breadcrumb>
+    </bbUI:breadcrumbBar>
+    <bbUI:inlineReceipt />
+    <bbUI:titleBar iconUrl="<%=ICON_URL%>">
+   	    <%= PAGE_TITLE %>
+   	</bbUI:titleBar>
 	<%  
 		java.util.Calendar calDueDate = null;
 		java.util.Calendar commonDueTime = null;
@@ -597,23 +625,23 @@ try {
 		String liNameParamName;
 		boolean isDueDateFirstPass = true;
 	%>
-	<bbNG:step title="Time part of all due dates" instructions="Please specify if you would like to set time of all due dates to same value during submit">
+	<bbUI:step title="Time part of all due dates" >
+		Please specify if you would like to set time of all due dates to same value during submit
+		<br/>
 		<%
 			commonDueTime = java.util.Calendar.getInstance();
 			commonDueTime.clear();
 			commonDueTime.set(0, 0, 0, 23, 59, 59);
 		%>
-		<bbNG:dataElement>
+		<bbUI:dataElement>
 			<label for="isCommonDueTimeParam">Use same time for all due dates?</label>		
-        	<bbNG:checkboxElement name="isCommonDueTimeParam" id="isCommonDueTimeParam" value="on" isSelected="false" helpText="" title="" optionLabel="Time to use:"/>
-        	<bbNG:datePicker baseFieldName="commonDueTimeParam" dateTimeValue="<%= commonDueTime %>"  showDate="false" showTime="true" midnightWarning="??midnight warning??" suppressInstructions="true"/>
-		</bbNG:dataElement>        
-	</bbNG:step>	
-	<bbNG:step title="Edit due dates">
-    <bbNG:inventoryList className="Lineitem" 
+	      	<input type="checkbox" name="isCommonDueTimeParam" id="isCommonDueTimeParam" value="on">Time to use:
+	      	<bbUI:datePicker startDateField="commonDueTimeParam" startDate="<%= commonDueTime %>"  hideDate="true" isShowTime="true" />
+		</bbUI:dataElement>        
+	</bbUI:step>	
+	<bbUI:step title="Edit due dates">
+	    <bbUI:list className="Lineitem" objectId="li"
 			collection="<%=liPhysicalList %>" 
-			showAll="true"
-			objectVar="li" 
 			initialSortCol="ColumnOrder"
 			>
 			<%
@@ -622,15 +650,15 @@ try {
 				int li_index = lineitemHelperHash.get(li.getId().toExternalString()).DueDateOrder;
 				logForward(LogService.Verbosity.DEBUG, "li_index: " + li_index);  
 				liIdParamName = liIdParamNameBase + li_index; 			
-				liDueDateParamName = liDueDateParamNameBase + li_index;
-				
+				//(!!)liDueDateParamName = liDueDateParamNameBase + li_index;
+				liDueDateParamName = liDueDateParamNameBase; 
 				logForward(LogService.Verbosity.DEBUG, "liDueDateParamName : " + liDueDateParamName + " liDueDateParamName.length(): " + liDueDateParamName.length());
 				liHasDueDateParamName = liHasDueDateParamNameBase + li_index; 
 				liIsAvailableParamName =  liIsAvailableParamNameBase + li_index; 
 				liNameParamName = liNameParamNameBase + li_index;
 			%>		
 	
-			<bbNG:listElement
+			<bbUI:listElement
 				comparator="<%=cmSortByColumnOrder%>" 
 				label="Column" 
 				name="ColumnOrder" >
@@ -638,64 +666,84 @@ try {
 					<input type="hidden" name="<%= liIdParamName %>" id="<%= liIdParamName %>" value="<%= li.getId().toExternalString()%>"/>
 					<input type="hidden" name="<%= liNameParamName %>" id="<%= liNameParamName %>" value="<%= li.getName()%>"/>
 					<% logForward(LogService.Verbosity.DEBUG, "Column - li_index: " + li_index); %>
-	    	</bbNG:listElement>
-    	
-    		<bbNG:listElement 
+	    	</bbUI:listElement>
+	    	
+	    	<bbUI:listElement 
 				comparator="<%=cmSortByName%>"    	
 				label="Name" 
-				name="Name" 
-				isRowHeader="true" >
+				name="Name" >
 	    	    	<%= li.getName() %>
 					<% logForward(LogService.Verbosity.DEBUG, "Name - li_index: " + li_index); %>    	    	
-	    	</bbNG:listElement>
-			<bbNG:listElement 
+	    	</bbUI:listElement>
+			<bbUI:listElement 
 				comparator="<%=cmSortByType%>"
 				label="Category" 
 				name="Category" >
 				<%= li.getType()  %>
 				<% logForward(LogService.Verbosity.DEBUG, "Category - li_index: " + li_index); %>
-			</bbNG:listElement>
-			<bbNG:listElement 
+			</bbUI:listElement>
+			<bbUI:listElement 
 				comparator="<%=cmSortByIsAvailable%>"
 				label="Is Available?" 
 				name="isAvailable" >
 				<input name="<%= liIsAvailableParamName%>" type="checkbox"  
 				<% if (li.getIsAvailable()) out.print ("checked"); %> >
 				<% logForward(LogService.Verbosity.DEBUG, "Is Available - li_index: " + li_index); %>
-			</bbNG:listElement>
-			<bbNG:listElement 
+			</bbUI:listElement>
+			<bbUI:listElement 
 				comparator="<%=cmSortByHasDueDate%>"
 				label="Has Due Date?" 
 				name="hasDueDate" >
 				<input name="<%= liHasDueDateParamName%>" type="checkbox"  
 				<% if (li.getOutcomeDefinition().getDueDate() != null) out.print ("checked"); %> >
 				<% logForward(LogService.Verbosity.DEBUG, "Has Due Date - li_index: " + li_index); %>
-			</bbNG:listElement>
-			<bbNG:listElement 
+			</bbUI:listElement>
+			<bbUI:listElement 
 				comparator="<%=cmSortByDueDate%>"		
 				label="Due Date" 
 				name="DueDate" > 
 				<c:if test="<%=!isDueDateFirstPass%>">
-					<bbNG:dataElement>
-						<bbNG:datePicker
-							baseFieldName = "<%= liDueDateParamName %>" 
-							dateTimeValue="<%= calDueDate %>"
-							showTime="true"
-						/>
-					</bbNG:dataElement>
+					<% 
+						//use of DatePickerTag here causes 
+						//IOException in DatePickerTag: java.io.IOException: Illegal to flush within a custom tag
+						logForward(LogService.Verbosity.DEBUG, "DatePickerTag dpt = new DatePickerTag() " + li_index);
+						DatePickerTag dpt = new DatePickerTag();
+						dpt.setPageContext(pageContext);
+						//(!!)dpt.setParent()
+						dpt.setStartDateField(liDueDateParamName);
+						logForward(LogService.Verbosity.DEBUG, "calDueDate " + calDueDate);
+						if (calDueDate == null) calDueDate = Calendar.getInstance();
+						dpt.setStartDate(calDueDate);
+						dpt.setIsShowTime(true);
+						dpt.setDatePickerIndex(li_index);
+						pageContext.setAttribute(DatePickerTag.DATE_PICKER_TAG_ATTRIBUTE, dpt, 2);
+						DatePicker dp = new DatePicker(2, calDueDate);
+						//DatePicker dp = new DatePicker(Calendar.HOUR, calDueDate);
+						pageContext.setAttribute(DatePickerTag.DATE_PICKER_ATTRIBUTE, dp, 2);
+						logForward(LogService.Verbosity.DEBUG, "<%@include ..." + li_index);
+						pageContext.setAttribute(DatePickerTag.DATE_PICKER_INDEX_ATTRIBUTE, li_index, 2);
+						//(!!)
+						logForward(LogService.Verbosity.DEBUG, "pageContext.PAGE_SCOPE: " + PageContext.PAGE_SCOPE);
+						logForward(LogService.Verbosity.DEBUG, "pageContext.REQUEST_SCOPE: " + PageContext.REQUEST_SCOPE);
+						logForward(LogService.Verbosity.DEBUG, "pageContext.SESSION_SCOPE: " + PageContext.SESSION_SCOPE);					
+					%>	
+						<%@include file="/taglib/date-picker.jsp"%>
 				</c:if >
 				<% 	logForward(LogService.Verbosity.DEBUG, "Due Date - li_index: " + li_index);
 					logForward(LogService.Verbosity.DEBUG, "lineitemHelperHash.get(li.getId().toExternalString()).isDueDateConstructed: " + lineitemHelperHash.get(li.getId().toExternalString()).isDueDateConstructed);
 					isDueDateFirstPass = false;
 				%>
-			</bbNG:listElement>
-		</bbNG:inventoryList>	
-	</bbNG:step> 
+			</bbUI:listElement>
+		</bbUI:list>	
+	</bbUI:step> 
 	<!-- cancelUrl="gc_duedates.jsp" -->
 	<!--  Cancel will bring us out of the form (back), only submit (and refresh?) will refresh it here - actually temp solution, has to be implemented with javascript-->
-  <bbNG:stepSubmit title="Submit"
+  <bbUI:stepSubmit title="Submit"
   	instructions="Click Submit to save and reload. Cancel acts as browser's back button."/> 
     Description of plugin processing is available <a href="http://projects.oscelot.org/gf/project/gc_duedates/wiki/?pagename=Grade+Center+Due+Dates+Building+Block+Description">here</a>.	
+</FORM>
+
+
 <%
 } catch (Throwable t) {
 	logForward(LogService.Verbosity.ERROR, t, "");   
@@ -703,7 +751,7 @@ try {
 }      
 
 %>
-</bbNG:dataCollection> 
-</bbNG:form>
-</bbNG:learningSystemPage >
+</bbUI:docTemplateBody>
+</bbData:context>
+
  
