@@ -42,7 +42,7 @@
 //1) Servlet declaration section: 
 //Global data members, logging functions and declarations of LineitemHelper and LineItemField 
 //inner classes. Inside LineitemHelper are declared 
-//ancestors of LineItemField - LineItemIsAvailableField, LineItemDateField and LineItemDueDateField classes, 
+//ancestors of LineItemField - LineItemIsAvailableField and LineItemDueDateField classes, 
 //which are closely integrated and accessing fields of its container - LineitemHelper.
 //LineitemHelper is created from Blackboard API's Lineitem object. In case of save action
 //ancestors of LineItemField are created from form parameters as its members too and data from just read from DB 
@@ -59,7 +59,7 @@
 		//using higher severity log level for easier development testing, log is overfilled when all messages are of debug level
 		//actual log.logWarning has to be commented out in production release, but may be uncommented for collecting of log messages  
 		if (verbosity.getLevelAsInt() > LogService.Verbosity.WARNING.getLevelAsInt()) {
-			//!! log.logWarning(message); 
+			//!!verbosity = blackboard.platform.log.LogService.Verbosity.WARNING;
 		}
 		log.log(message, verbosity);
 	}
@@ -534,7 +534,7 @@ try {
 			rm = new ReceiptMessage("WARNING - Not all modifications were saved, some error(s) occurred: <br>" 
 									+ strSaveWarnings, 
 								ReceiptMessage.messageTypeEnum.WARNING);
-		} else rm = new ReceiptMessage("SAVE SUCCESSFUL", ReceiptMessage.messageTypeEnum.SUCCESS);
+		} else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
 		ro.addMessage(rm);
 		request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
 		//logForward(LogService.Verbosity.DEBUG, "response.sendRedirect" + formURL + "&uuid=" + sessionTag.randomUUID);
@@ -556,20 +556,13 @@ try {
 //3)Construction of response       
 %>
 <bbNG:learningSystemPage>
-<bbNG:form name="idlaGCDueDatesForm" method="post" action="gc_duedates.jsp" >
+<%@ include file="/WEB-INF/js/gc_duedates.js" %>
+<bbNG:form name="idlaGCDueDatesForm" method="post" action="gc_duedates.jsp" onsubmit="setSameTimeOnFormSubmit(); return true;">
 
 	<input type="hidden" name="course_id" id="course_id" value="<%= courseIdParameter%>"/>
 	<input type="hidden" name="idlaGCDueDatesActionParam" id="idlaGCDueDatesActionParam" value="save"/> 
 	<input type="hidden" name="lineitemCountParam" value="<%= liPhysicalList.size()  %>"/> 
 	
-	<script language='javascript' type='text/javascript'>
-	 //	document.getElementById('idlaGCDueDatesActionParam').value = '';
-	
-	//	function onFormSubmit() {
-	//		document.getElementById('idlaGCDueDatesActionParam').value = 'save';
-	//		return true;
-	//  	}
-	</script>
 	<bbNG:dataCollection markUnsavedChanges="false">
 	<%
 	try {      
@@ -605,8 +598,8 @@ try {
 		%>
 		<bbNG:dataElement>
 			<label for="isCommonDueTimeParam">Use same time for all due dates?</label>		
-        	<bbNG:checkboxElement name="isCommonDueTimeParam" id="isCommonDueTimeParam" value="on" isSelected="false" helpText="" title="" optionLabel="Time to use:"/>
-        	<bbNG:datePicker baseFieldName="commonDueTimeParam" dateTimeValue="<%= commonDueTime %>"  showDate="false" showTime="true" midnightWarning="??midnight warning??" suppressInstructions="true"/>
+        	<bbNG:checkboxElement name="isCommonDueTimeParam" id="isCommonDueTimeParam" value="on" isSelected="false" helpText="" title="" optionLabel="Time to use:" OnClick="enableCommonDueTimeBox(this)"/>
+        	<bbNG:datePicker baseFieldName="commonDueTimeParam" dateTimeValue="<%= commonDueTime %>"  showDate="false" showTime="true" midnightWarning="??midnight warning??" suppressInstructions="true" displayOnly="true"/>
 		</bbNG:dataElement>        
 	</bbNG:step>	
 	<bbNG:step title="Edit due dates">
@@ -667,7 +660,7 @@ try {
 				comparator="<%=cmSortByHasDueDate%>"
 				label="Has Due Date?" 
 				name="hasDueDate" >
-				<input name="<%= liHasDueDateParamName%>" type="checkbox"  
+				<input name="<%= liHasDueDateParamName%>" id="<%= liHasDueDateParamName%>" type="checkbox"  
 				<% if (li.getOutcomeDefinition().getDueDate() != null) out.print ("checked"); %> >
 				<% logForward(LogService.Verbosity.DEBUG, "Has Due Date - li_index: " + li_index); %>
 			</bbNG:listElement>
@@ -678,8 +671,8 @@ try {
 				<c:if test="<%=!isDueDateFirstPass%>">
 					<bbNG:dataElement>
 						<bbNG:datePicker
-							baseFieldName = "<%= liDueDateParamName %>" 
-							dateTimeValue="<%= calDueDate %>"
+							baseFieldName = "<%= liDueDateParamName%>"
+							dateTimeValue="<%= calDueDate%>"
 							showTime="true"
 						/>
 					</bbNG:dataElement>
