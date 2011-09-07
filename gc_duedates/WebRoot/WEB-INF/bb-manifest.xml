@@ -5,7 +5,7 @@
     <name value= "Grade Center Due Dates"/>
     <handle value= "gradecenter_duedates"/>
     <description value= "Grade Center Due Dates"/>
-    <version value= "0.8"/>
+    <version value= "0.9"/>
     
     <requires>
     	<bbversion value="9.0"/>
@@ -19,13 +19,14 @@
     </vendor>
    
     <http-actions>
-      <!--properties button code -->
+        <config value="settings.jsp"/>
+        <remove value=""/>
     </http-actions>
         
     <!-- Tools defined by this extension -->
     <application-defs>
       <application 	name="Grade Center Due Dates"
-      				handle="gradecenter_duedates" 
+      				handle="gradecenter_duedates"
       				type="shared" 
       				use-ssl="false" 
       				is-sys-tool="false" 
@@ -39,6 +40,7 @@
         <links>
 		  <link>
             <type value="course_tool"/>
+            <!--<type value="gradebook_extension"/>-->
             <name value="Set Grade Center Due Dates"/>
             <url value="gc_duedates.jsp" />
             <description value="Grade Center Due Dates" />
@@ -50,6 +52,10 @@
     <!-- code permissions required for proper operation -->
     <permissions>
     	<permission type="attribute" name="user.authinfo" actions="get"/>
+        <permission type="attribute" name="course.gradebook" actions="get"/>
+        <permission type="persist" name="GradableItem" actions="modify"/>
+        <permission type="persist" name="euditem" actions="create,modify,delete"/>
+        <permission type="persist" name="euditemrole" actions="create,modify,delete"/>
     </permissions>
   </plugin>
 </manifest>
