@@ -148,7 +148,7 @@ public class LineitemHelper implements Serializable {
             void checkAndSetInternal() throws Exception {
                     Calendar saved_due_date = LineitemHelper.this.lineitem.getDueDate();
                     GCDDLog.logForward(LogService.Verbosity.INFORMATION, "saved_due_date: " + saved_due_date, this);
-                    Calendar due_date = DbUtil.stringToCalendar(value);
+                    Calendar due_date = GCDDUtil.dateStringToCalendar(value);
                     if (requestScope.getSettings().isShowHasDueDateColumn()) {
                         GCDDLog.logForward(LogService.Verbosity.INFORMATION, "liHasDueDate.value: " + liHasDueDate.value, this);
                         if (liHasDueDate.value.equals("on")) {
@@ -210,7 +210,7 @@ public class LineitemHelper implements Serializable {
                         Calendar saved_due_date = LineitemHelper.this.lineitem.getDueDate();
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "saved_due_date: " + saved_due_date, this);
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "value: " + value, this);
-                        Calendar due_date = DbUtil.stringToCalendar(value);
+                        Calendar due_date = GCDDUtil.dateStringToCalendar(value);
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "due_date: " + due_date, this);
                         Calendar common_duetime = requestScope.getSettings().getCommonDueTime();
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "common_duetime: " + common_duetime.toString(), this);

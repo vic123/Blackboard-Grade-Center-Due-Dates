@@ -125,7 +125,7 @@ try {
                         if ("".equals(gp_duedate_str)) continue;
                         gph = gradingPeriodHelperHash.hashMap.get(gp_id.toExternalString());
                         if (gph == null) {
-                                strSaveWarnings = strSaveWarnings + "Period Name: " + gp_title_str + "; ID: "
+                                strSaveWarnings = strSaveWarnings + "<br> <br> Period Name: " + gp_title_str + "; ID: "
                                         + gp_id_str + "; Period is missing (could be deleted by another user) on server and was not saved." + "<br>";
                                 continue;
                         }
@@ -134,8 +134,9 @@ try {
                         for (Object obj: gph.getLineitemHelperHash().hashMap.values()) {
                             LineitemHelper lih = (LineitemHelper) obj;
                             lih.fieldsList = new ArrayList<LineitemHelper.LineItemField>();
+							//"_datetime" is not correctly updated by javascript when date is entered by hand
                             LineitemHelper.LineItemField lif
-                                    = lih.new LineItemDueDateFieldForPeriod(GradingPeriodHelper.DUEDATE_PARAM_NAME_BASE + i + "_datetime", requestScope);
+                                    = lih.new LineItemDueDateFieldForPeriod(GradingPeriodHelper.DUEDATE_PARAM_NAME_BASE + i + "_date", requestScope);
                             lih.fieldsList.add(lif);
                             lif.checkAndSet();
                             if (lih.needsSave()) {
@@ -156,8 +157,8 @@ try {
                 } catch (Throwable t) {
                         GCDDLog.logForward(LogService.Verbosity.WARNING, t, "", this);
                         if (gph != null) gph.strRowStatus = "Error";
-                        strSaveWarnings = strSaveWarnings + "Period Name: " + gp_title_str
-                                        + ", ID: " + gp_id_str + "; Error occurred upon saving of period grade items, error message: " + t.getClass().getName() + ": " + t.getMessage() + "<br>";
+                        strSaveWarnings = strSaveWarnings + "<br> <br> Period Name: " + gp_title_str
+                                        + ", ID: " + gp_id_str + "; Error occurred upon saving of period grade items, error message: " + GCDDUtil.constructExceptionMessage(t);
                 }
         }
 
@@ -166,7 +167,7 @@ try {
         ReceiptOptions	ro = new ReceiptOptions();
         ReceiptMessage rm;
         if (strSaveWarnings.length() != 0) {
-                rm = new ReceiptMessage("WARNING - Not all modifications were saved, some error(s) occurred: <br>"
+                rm = new ReceiptMessage("WARNING - Not all modifications were saved, some error(s) occurred:"
                                                                 + strSaveWarnings,
                                                         ReceiptMessage.messageTypeEnum.WARNING);
         } else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);

@@ -8,10 +8,14 @@ import blackboard.platform.plugin.PlugInUtil;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.Enumeration;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.Date;
 
 
 /**
@@ -85,5 +89,28 @@ public class GCDDUtil {
         if ( otherTxt == null )
               return 1;
         return txt.compareToIgnoreCase(otherTxt);
+    }
+
+    public static Calendar dateStringToCalendar(String strCal) throws ParseException {
+        if ("".equals(strCal)) return null;
+        SimpleDateFormat _sdf = new SimpleDateFormat("MM/dd/yyyy");
+        Calendar cal;
+        Date date = _sdf.parse(strCal);
+        cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+    public static String constructExceptionMessage(Throwable e) {
+        GCDDLog.logForward(LogService.Verbosity.DEBUG, "Entered BbWsUtil.constructExceptionMessage() ");
+        String msg = e.toString();
+        Throwable cause_e = e;
+        int loop_limit = 0;
+        while (cause_e.getCause() != null) {
+            cause_e = cause_e.getCause();
+            msg += " <br> CAUSED BY: " + cause_e.toString();
+            loop_limit++;
+            if (loop_limit > 10) break;
+        }
+        return msg;
     }
 }

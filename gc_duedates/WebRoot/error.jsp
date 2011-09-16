@@ -21,7 +21,9 @@
 
 <p>An unhandled exception occurred, if you think this is a bug then please create 
 <a href="http://projects.oscelot.org/gf/project/gc_duedates/tracker/">bug-tracker</a> 
-entry and supplement (copy/paste) text from this page. It contains exception message, stack trace, any form request parameters and list of log messages collected after page reload.</p>
+entry and supplement (copy/paste) exception message and stack trace from this page.
+<!-- (!!) It contains exception message, stack trace, any form request parameters and list of log messages collected after page reload. -->
+</p>
 <%
 if (exception != null) {
 	PrintWriter pw = new PrintWriter( out );

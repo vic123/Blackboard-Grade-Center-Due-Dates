@@ -2,6 +2,7 @@ package idla.gc_duedates;
 
 import blackboard.platform.log.LogService;
 import blackboard.persist.Id;
+import blackboard.persist.KeyNotFoundException;
 import blackboard.platform.gradebook2.GradingPeriod;
 import blackboard.platform.gradebook2.GradableItem;
 import java.util.List;
@@ -60,6 +61,20 @@ public class GradingPeriodHelper {
     }
     public LineitemHelperHashBean getLineitemHelperHash() {
         return lineitemHelperHash;
+    }
+
+    public static String getGradingPeriodTitle(GradableItem gradableItem, GCDDRequestScopeBean requestScope) {
+        String gp_title = "";
+        Id id = gradableItem.getGradingPeriodId();
+        if (id != null) {
+            try {
+                GradingPeriod gp = requestScope.getGradebookManager().getGradingPeriod(id);
+                gp_title = gp.getTitle();
+            } catch (Exception e) {
+                GCDDLog.logForward(LogService.Verbosity.WARNING, e, "GradingPeriodHelper.getGradingPeriodTitle(): ");
+            }
+        }
+        return gp_title;
     }
 
 }

@@ -39,6 +39,7 @@ inventoryList is created without vertical scroll bar
                                 idla.gc_duedates.GCDDException,
                                 idla.gc_duedates.LineitemHelperHashBean,
                                 idla.gc_duedates.GCDDRequestScopeBean,
+                                idla.gc_duedates.GradingPeriodHelper,
                                 idla.gc_duedates.SettingsBean,
                                 idla.gc_duedates.GCDDUtil,
                                 idla.gc_duedates.LineitemHelper
@@ -70,12 +71,15 @@ inventoryList is created without vertical scroll bar
 	String ICON_URL;
 
 	Comparator<GradableItem> cmSortByColumnOrder;
+        Comparator<GradableItem> cmSortByGradingPeriod;
         Comparator<GradableItem> cmSortByName;
         Comparator<GradableItem> cmSortByType;
         Comparator<GradableItem> cmSortByIsAvailable;
         Comparator<GradableItem> cmSortByHasDueDate;
 	Comparator<GradableItem> cmSortByDueDate;
 	LineitemHelper.ComparatorSortByMinutesPerPoint cmSortByMinutesPerPoint;
+    //requered for cmSortByGradingPeriod comparator which is inner class and wants requestScope to have final modifier
+        GCDDRequestScopeBean requestScopeCopy;
 
 //end of servlet declaration section
 //Below are several objects injected as beans
@@ -108,6 +112,7 @@ try {
     GCDDUtil.logRequestParamters(session, request);
 
     requestScope.init(session, request, response, settings);
+    requestScopeCopy = requestScope;
 
     PAGE_TITLE = "Grade Center Due Dates - individual due dates (all assignments listed)";
     //special Blackboard API funttion for constructing of path the resourse located in plugin's WebRoot dir
@@ -122,6 +127,17 @@ try {
         }
     };
 
+    cmSortByGradingPeriod = new Comparator<GradableItem>() {
+        public int compare(GradableItem li1, GradableItem li2) {
+            String s1 = GradingPeriodHelper.getGradingPeriodTitle(li1, requestScopeCopy);
+            String s2 = GradingPeriodHelper.getGradingPeriodTitle(li2, requestScopeCopy);
+            int compare = GCDDUtil.nullSafeStringComparator(s1, s2);
+            if (compare == 0) return cmSortByName.compare(li1, li2);
+            return compare;
+        }
+    };
+
+
     cmSortByName = new Comparator<GradableItem>() {
         public int compare(GradableItem li1, GradableItem li2) {
             String s1 = (String)li1.getTitle();
@@ -130,6 +146,8 @@ try {
             return compare;
         }
     };
+
+
     cmSortByType = new Comparator<GradableItem>() {
         public int compare(GradableItem li1, GradableItem li2) {
             String s1 = null;
@@ -219,7 +237,7 @@ try {
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "li_name_str: " + li_name_str, this);
                         lih = lineitemHelperHash.hashMap.get(li_id.toExternalString());
                         if (lih == null) {
-                                strSaveWarnings = strSaveWarnings + "Column Name: " + li_name_str
+                                strSaveWarnings = strSaveWarnings + "<br> <br> Column Name: " + li_name_str
                                         + "; ID: " + li_id_str + "; Column is missing (could be deleted by another user) on server and was not saved." + "<br>";
                                 continue;
                         }
@@ -227,7 +245,8 @@ try {
                         LineitemHelper.LineItemField lif = lih.new LineItemIsAvailableField(LineitemHelper.liIsAvailableParamNameBase + i, requestScope);
                         lih.fieldsList = new ArrayList<LineitemHelper.LineItemField>();
                         lih.fieldsList.add(lif);
-                        lif = lih.new LineItemDueDateField(LineitemHelper.liDueDateParamNameBase + i + "_datetime", requestScope);
+						//"_datetime" is not correctly updated by javascript when date is entered by hand
+                        lif = lih.new LineItemDueDateField(LineitemHelper.liDueDateParamNameBase + i + "_date", requestScope);
                         lih.fieldsList.add(lif);
                         for (LineitemHelper.LineItemField lif_temp: lih.fieldsList) {
                                 lif_temp.checkAndSet();
@@ -242,8 +261,9 @@ try {
                 } catch (Throwable t) {
                         GCDDLog.logForward(LogService.Verbosity.WARNING, t, "", this);
                         if (lih != null) lih.strRowStatus = "Error";
-                        strSaveWarnings = strSaveWarnings + "Column Name: " + li_name_str
-                                + ", ID: " + li_id_str + "; Error occurred upon saving of column, error message: " + t.getClass().getName() + ": " + t.getMessage() + "<br>";
+                        strSaveWarnings = strSaveWarnings + "<br> <br> Column Name: " + li_name_str
+                                + ", ID: " + li_id_str + "; Error occurred upon saving of column, error message: " + GCDDUtil.constructExceptionMessage(t) ;
+
                 }
             }
 
@@ -252,7 +272,7 @@ try {
             ReceiptOptions	ro = new ReceiptOptions();
             ReceiptMessage rm;
             if (strSaveWarnings.length() != 0) {
-                    rm = new ReceiptMessage("WARNING - Not all modifications were saved, some error(s) occurred: <br>"
+                    rm = new ReceiptMessage("WARNING - Not all modifications were saved, some error(s) occurred:"
                                                                     + strSaveWarnings,
                                                             ReceiptMessage.messageTypeEnum.WARNING);
             } else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
@@ -336,6 +356,11 @@ try {
                     contentEditUrl = "";
                     GCDDLog.logForward(LogService.Verbosity.DEBUG, contentEditUrl, this);
                 }
+                String modifyPeriodURLBase = "/webapps/gradebook/do/instructor/addModifyPeriods?course_id="
+                        + requestScope.getCourseId().toExternalString()
+                        + "&actionType=modify&id="; //?? PkId{key=";
+                String modifyPeriodURL = null;
+
 	%>
         <bbNG:step hideNumber="true" title="<%= editPeriodDueDatesURL%>">
         </bbNG:step>
@@ -359,7 +384,7 @@ try {
                                 collection="<%=lineitemHelperHash.liPhysicalList %>"
                                 showAll="true"
                                 objectVar="li"
-                                initialSortCol="Name"
+                                initialSortCol="GradingPeriod"
                                 >
                         <%
                             GCDDLog.logForward(LogService.Verbosity.DEBUG, "li.getId(): " + li.getId(), this);
@@ -378,16 +403,22 @@ try {
                             colDescription = blackboard.util.TextFormat.stripTags(ft.getText());
                             GCDDLog.logForward(LogService.Verbosity.DEBUG, "colDescription: " + colDescription);
                             colCategoryName = "";
-                            try {
-                                GradebookType gradeBookType =
-                                        (GradebookType)GradebookTypeDAO.get().loadById(li.getCategoryId());
-                                colCategoryName = gradeBookType.getTitle();
-                                if (colCategoryName == null) colCategoryName = "";
-                                GCDDLog.logForward(LogService.Verbosity.DEBUG, "colCategoryName: " + colCategoryName, this);
-                                GCDDLog.logForward(LogService.Verbosity.DEBUG, "colCategoryName.length(): " + colCategoryName.length(), this);
-                                if (colCategoryName.endsWith(".name")) colCategoryName = colCategoryName.substring(0, colCategoryName.length() - 5);
-                                //if (contentEditUrl.length() != 0) colCategoryName = "<a href='" + contentEditUrl + "'>" + colCategoryName + "</a>";
-                            } catch (blackboard.persist.KeyNotFoundException knfe) {}
+                            if (li.getCategoryId() != null) {
+                                try {
+                                    GradebookType gradeBookType =
+                                            (GradebookType)GradebookTypeDAO.get().loadById(li.getCategoryId());
+                                    colCategoryName = gradeBookType.getTitle();
+                                    if (colCategoryName == null) colCategoryName = "";
+                                    GCDDLog.logForward(LogService.Verbosity.DEBUG, "colCategoryName: " + colCategoryName, this);
+                                    GCDDLog.logForward(LogService.Verbosity.DEBUG, "colCategoryName.length(): " + colCategoryName.length(), this);
+                                    if (colCategoryName.endsWith(".name")) colCategoryName = colCategoryName.substring(0, colCategoryName.length() - 5);
+                                    //if (contentEditUrl.length() != 0) colCategoryName = "<a href='" + contentEditUrl + "'>" + colCategoryName + "</a>";
+                                } catch (blackboard.persist.KeyNotFoundException knfe) {}
+                            }
+                            modifyPeriodURL = "";
+                            if (li.getGradingPeriodId() != null) {
+                                modifyPeriodURL = modifyPeriodURLBase + li.getGradingPeriodId().toExternalString();
+                            }
                         %>
                         <c:if test="<%=settings.isShowOrderColumn()%>">
                             <bbNG:listElement
@@ -400,13 +431,28 @@ try {
                         </c:if >
 
                         <bbNG:listElement
+                                comparator="<%=cmSortByGradingPeriod%>"
+                                label="Grading Period"
+                                name="GradingPeriod"
+                                isRowHeader="false" >
+                            <c:if test="<%=(modifyPeriodURL.length() == 0)%>">
+                                <%= GradingPeriodHelper.getGradingPeriodTitle(li, requestScope) %>
+                            </c:if >
+                            <c:if test="<%=(modifyPeriodURL.length() != 0)%>">
+                            <a href="<%= modifyPeriodURL %>"><%= GradingPeriodHelper.getGradingPeriodTitle(li, requestScope) %></a>
+                            </c:if >
+                            <input type="hidden" name="<%= liIdParamName %>" id="<%= liIdParamName %>" value="<%= li.getId().toExternalString()%>"/>
+                            <input type="hidden" name="<%= liNameParamName %>" id="<%= liNameParamName %>" value="<%= li.getTitle()%>"/>
+                            <% GCDDLog.logForward(LogService.Verbosity.DEBUG, "GradingPeriodHelper.getGradingPeriodTitle(): " + GradingPeriodHelper.getGradingPeriodTitle(li, requestScope));
+                            %>
+                        </bbNG:listElement>
+
+                        <bbNG:listElement
                                 comparator="<%=cmSortByName%>"
                                 label="Name"
                                 name="Name"
                                 isRowHeader="true" >
                             <a href="<%= modifyColumnURL %>" title="<%=colDescription%>">  <%= li.getTitle() %> </a>
-                            <input type="hidden" name="<%= liIdParamName %>" id="<%= liIdParamName %>" value="<%= li.getId().toExternalString()%>"/>
-                            <input type="hidden" name="<%= liNameParamName %>" id="<%= liNameParamName %>" value="<%= li.getTitle()%>"/>
                             <% GCDDLog.logForward(LogService.Verbosity.DEBUG, "Name - li_index: " + li_index);
                                GCDDLog.logForward(LogService.Verbosity.DEBUG, "li.getDescription(): " + li.getDescription());
                                GCDDLog.logForward(LogService.Verbosity.DEBUG, "li.getDescriptionForDisplay(): " + li.getDescriptionForDisplay());

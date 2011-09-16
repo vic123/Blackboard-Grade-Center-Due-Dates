@@ -52,8 +52,10 @@ public class GCDDRequestScopeBean implements Serializable {
 	//obtaing of context through bbData:context tag caused IllegalStateException
 	//upon response.sendRedirect(formURL) after saving of lineitems.
         this.context = ContextManagerFactory.getInstance().getContext();
+        String user_name = null;
         this.sessionUser = context.getUser();
-        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "sessionUser.getUserName(): " + this.sessionUser.getUserName(), this);
+        if (sessionUser != null) user_name = this.sessionUser.getUserName();
+        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "sessionUser.getUserName(): " + user_name, this);
 
         this.courseMembershipDbLoader = CourseMembershipDbLoader.Default.getInstance();
         this.session = session;

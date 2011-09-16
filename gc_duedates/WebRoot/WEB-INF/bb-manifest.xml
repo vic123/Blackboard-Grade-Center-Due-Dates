@@ -5,10 +5,10 @@
     <name value= "Grade Center Due Dates"/>
     <handle value= "gradecenter_duedates"/>
     <description value= "Grade Center Due Dates"/>
-    <version value= "0.9"/>
+    <version value= "0.9.32"/>
     
     <requires>
-    	<bbversion value="9.0"/>
+    	<bbversion value="9.1.50119.0"/>
     </requires>
     
     <vendor>
