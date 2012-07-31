@@ -136,7 +136,7 @@ try {
                             lih.fieldsList = new ArrayList<LineitemHelper.LineItemField>();
 							//"_datetime" is not correctly updated by javascript when date is entered by hand
                             LineitemHelper.LineItemField lif
-                                    = lih.new LineItemDueDateFieldForPeriod(GradingPeriodHelper.DUEDATE_PARAM_NAME_BASE + i + "_date", requestScope);
+                                    = lih.new LineItemDueDateFieldForPeriod(GradingPeriodHelper.DUEDATE_PARAM_NAME_BASE + i, requestScope);
                             lih.fieldsList.add(lif);
                             lif.checkAndSet();
                             if (lih.needsSave()) {
@@ -274,7 +274,7 @@ try {
                                 <bbNG:datePicker
                                         baseFieldName = "<%= gpDueDateParamName%>"
                                         dateTimeValue="<%= null%>"
-                                        showTime="false"
+                                        showTime="${settings.showDueTime}"
                                 />
                             </bbNG:dataElement>
                         </c:if >

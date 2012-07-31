@@ -245,8 +245,8 @@ try {
                         LineitemHelper.LineItemField lif = lih.new LineItemIsAvailableField(LineitemHelper.liIsAvailableParamNameBase + i, requestScope);
                         lih.fieldsList = new ArrayList<LineitemHelper.LineItemField>();
                         lih.fieldsList.add(lif);
-						//"_datetime" is not correctly updated by javascript when date is entered by hand
-                        lif = lih.new LineItemDueDateField(LineitemHelper.liDueDateParamNameBase + i + "_date", requestScope);
+			//"_datetime" is not correctly updated by javascript when date is entered by hand
+                        lif = lih.new LineItemDueDateField(LineitemHelper.liDueDateParamNameBase + i, requestScope);
                         lih.fieldsList.add(lif);
                         for (LineitemHelper.LineItemField lif_temp: lih.fieldsList) {
                                 lif_temp.checkAndSet();
@@ -282,6 +282,19 @@ try {
             // Retrieve the course identifier from the URL and construct formURL for response.sendRedirect(formURL) to itself
             String formURL = request.getRequestURL().toString() + "?course_id="
                     + requestScope.getCourseId().toExternalString();
+            if ("on".equals(requestScope.getRequest().getParameter("isCommonDueTimeParam"))) {
+              formURL = formURL + "&isCommonDueTimeParam=on";
+            }
+            String str_com_dt = requestScope.getRequest().getParameter("commonDueTimeParam_time");
+            if (!GCDDUtil.isStringBlank(str_com_dt)) {
+                formURL = formURL + "&isCommonDueTimeParam=" + str_com_dt;
+            }
+            //when commonDueTime datetime picker is not enabled, it passes only commonDueTimeParam_datetime parameter
+            //, omitting commonDueTimeParam_time one.
+            //datetime format is different from date+time formats concatenation
+            //, things become too complex for nothing
+            //Disabled commonDueTime does not preserve its value
+            formURL = response.encodeRedirectURL(formURL);
             GCDDLog.logForward(LogService.Verbosity.DEBUG, "response.sendRedirect(), formURL: " + formURL, this);
             response.sendRedirect(formURL);
             return;
@@ -330,6 +343,7 @@ try {
     <%--@ include file="/WEB-INF/js/gc_duedates_beforeunload.js" --%>
 	<%  
 		java.util.Calendar calDueDate = null;
+                boolean isCommonDueTime = false;
 		java.util.Calendar commonDueTime = null;
 		String liIdParamName;			
 		String liDueDateParamName;
@@ -365,17 +379,35 @@ try {
         <bbNG:step hideNumber="true" title="<%= editPeriodDueDatesURL%>">
         </bbNG:step>
 
-        <c:if test="<%=settings.isShowCommonDueTime()%>">
+        <c:if test="<%=settings.isShowDueTime()%>">
             <bbNG:step title="Time part of all due dates" instructions="Please specify if you would like to set time of all due dates to same value during submit">
-                <%
+                <% 
+                    isCommonDueTime = false;
+                    String str_is_com_dt = request.getParameter("isCommonDueTimeParam");
+                    if ("on".equals(str_is_com_dt)) isCommonDueTime = true;
+
+                    GCDDLog.logForward(LogService.Verbosity.DEBUG, "str_is_com_dt: " + str_is_com_dt
+                        + "; isCommonDueTime: " + isCommonDueTime, this);
+
                     commonDueTime = java.util.Calendar.getInstance();
-                    commonDueTime.clear();
-                    commonDueTime.set(0, 0, 0, 23, 59, 59);
+                    commonDueTime.setTimeInMillis(settings.getCommonDueTime().getTimeInMillis());
+                    String str_com_dt = request.getParameter("commonDueTimeParam" + "_time");
+                    if (!GCDDUtil.isStringBlank(str_com_dt)) {
+                        try {
+                            str_com_dt = GCDDUtil.fixTimeString(str_com_dt);
+                            commonDueTime = GCDDUtil.dateStringToCalendar(str_com_dt,
+                                    settings.getTimeFormat());
+                        } catch (Exception e) {
+                            GCDDLog.logForward(LogService.Verbosity.DEBUG, e, "GCDDUtil.dateStringToCalendar(str_com_dt,...", this);
+                        }
+                    }
+                    GCDDLog.logForward(LogService.Verbosity.DEBUG, "str_com_dt: " + str_com_dt
+                        + "; commonDueTime: " + commonDueTime, this);
                 %>
                 <bbNG:dataElement>
                         <label for="isCommonDueTimeParam">Use same time for all due dates?</label>
-                <bbNG:checkboxElement name="isCommonDueTimeParam" id="isCommonDueTimeParam" value="on" isSelected="false" helpText="" title="" optionLabel="Time to use:" OnClick="enableCommonDueTimeBox(this)"/>
-                <bbNG:datePicker baseFieldName="commonDueTimeParam" dateTimeValue="<%= commonDueTime %>"  showDate="false" showTime="true" midnightWarning="??midnight warning??" suppressInstructions="true" displayOnly="true"/>
+                <bbNG:checkboxElement name="isCommonDueTimeParam" id="isCommonDueTimeParam" value="on" isSelected="<%= isCommonDueTime %>" helpText="" title="" optionLabel="Time to use:" OnClick="enableCommonDueTimeBox(this)"/>
+                <bbNG:datePicker baseFieldName="commonDueTimeParam" dateTimeValue="<%= commonDueTime %>"  showDate="false" showTime="true" midnightWarning="??midnight warning??" suppressInstructions="true" displayOnly="<%= !isCommonDueTime%>"/>
                 </bbNG:dataElement>
             </bbNG:step>
         </c:if >
@@ -504,7 +536,7 @@ try {
                                             <bbNG:datePicker
                                                     baseFieldName = "<%=liDueDateParamName%>"
                                                     dateTimeValue="<%= calDueDate%>"
-                                                    showTime="false"
+                                                    showTime="${settings.showDueTime}"
                                                     label=""
                                             />
                                             </bbNG:dataElement>

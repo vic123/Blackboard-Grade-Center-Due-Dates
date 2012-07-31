@@ -63,8 +63,11 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
         //save modified data, set any success/warning session status and refresh page
         GCDDLog.logForward(LogService.Verbosity.INFORMATION, "Entering if (formAction.equals(\"save\")) {" );
 %>
+<jsp:setProperty name="settings" property="showDueTime" value="false"/>
 <jsp:setProperty name="settings" property="*" />
+<jsp:setProperty name="settings" property="showDueTime" />
 <%
+                String sDT = request.getParameter("showDueTime");
                 settings.saveSettings();
 		ReceiptOptions	ro = new ReceiptOptions();
 		ReceiptMessage rm;
@@ -101,13 +104,30 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
     <%@ include file="/WEB-INF/js/gc_duedates.js" %>
 
     <%-- <jsp:useBean id="settings" scope="session" class="idla.gc_duedates.SettingsBean"/> --%>
-	<bbNG:step hideNumber="true" title="Time part of all due dates" instructions="Please specify time value set upon submit of due date">
+	<bbNG:step hideNumber="true" title="Time part of all due dates" instructions="Please specify time value set upon submit of due date if time part of due date is not shown (next option)">
             <!-- labelFor="commonDueTime_time" - ?? 2011-08-17 15:27:43 - 'label' attribute is mandatory when 'labelFor' is specified (/webapps/IDLA-gradecenter_due-BB_bb60/settings.jsp, commonDueTime_time) -->
             <bbNG:dataElement label=" " >
         	<bbNG:datePicker baseFieldName="commonDueTime"
                                  dateTimeValue='${settings.commonDueTime}'  showDate="false" showTime="true" midnightWarning="??midnight warning??" suppressInstructions="true" displayOnly="false"/>
             </bbNG:dataElement>
 	</bbNG:step>
+	<bbNG:step hideNumber="true" title="Show time part of due dates" instructions="Allows editing of time part for individual and period due dates">
+            <bbNG:dataElement label=" " >
+        	<bbNG:checkboxElement name="showDueTime" id="showDueTime" value="true"
+                                      displayOnly="false"  isSelected="${settings.showDueTime}" />
+            </bbNG:dataElement>
+	</bbNG:step>
+	<bbNG:step hideNumber="true" title="Date and time formats" instructions="Format of date and time strings submitted by web pages">
+            <bbNG:dataElement label="Date Format" >
+        	<bbNG:textElement name="dateFormat" id="dateFormat" value="${settings.dateFormat}"
+                                      displayOnly="false" />
+            </bbNG:dataElement>
+            <bbNG:dataElement label="Time Format" >
+        	<bbNG:textElement name="timeFormat" id="timeFormat" value="${settings.timeFormat}"
+                                      displayOnly="false" />
+            </bbNG:dataElement>
+	</bbNG:step>
+
         <bbNG:step hideNumber="true" title="Log Verbosity">
             <bbNG:dataElement label=" " labelFor="logSeverityOverride">
                 <select name="logSeverityOverride" id="logSeverityOverride">

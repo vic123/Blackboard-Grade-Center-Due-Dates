@@ -99,22 +99,16 @@ public class SettingsBean implements Serializable {
     public java.util.Calendar getCommonDueTime() throws Exception {
         GCDDLog.logForward(LogService.Verbosity.DEBUG, "entered SettingsBean.getCommonDueTime() ", this);
         String str_time = this.properties.getProperty("CommonDueTime", "10:00 PM");
+        str_time = GCDDUtil.fixTimeString(str_time);
         GCDDLog.logForward(LogService.Verbosity.DEBUG, "SettingsBean.getCommonDueTime(); str_time: " + str_time, this);
-        Calendar due_date = blackboard.db.DbUtil.stringToCalendar(str_time);
-        GCDDLog.logForward(LogService.Verbosity.DEBUG, "SettingsBean.getCommonDueTime_time(); due_date: " + due_date, this);
-        SimpleDateFormat df = new SimpleDateFormat("K:mm a");
-        //SimpleDateFormat df = new SimpleDateFormat("HH:mm");
-        Date d = df.parse(str_time);
-        Calendar gc = new GregorianCalendar();
-        gc.setTime(d);
+        String time_fmt = getTimeFormat();
+        Calendar gc = GCDDUtil.dateStringToCalendar(str_time, time_fmt);
         return gc;
     }
 
     public void setCommonDueTime_time(String value) {
         GCDDLog.logForward(LogService.Verbosity.DEBUG, "entered SettingsBean.setCommonDueTime_time(), value: " + value, this);
-        SimpleDateFormat df = new SimpleDateFormat("K:mm a");
-        Calendar due_date = blackboard.db.DbUtil.stringToCalendar(value);
-        GCDDLog.logForward(LogService.Verbosity.DEBUG, "SettingsBean.setCommonDueTime_time(); due_date: " + due_date, this);
+        value = GCDDUtil.fixTimeString(value);
         this.properties.setProperty("CommonDueTime", value);
     }
 
@@ -122,9 +116,16 @@ public class SettingsBean implements Serializable {
      * These settings may be added as optional features of BB in future releases,
      * currently just return hardcoded false values.
      */
-    public boolean isShowCommonDueTime() {
-        return false;
+
+    public boolean isShowDueTime() {
+        String val = this.properties.getProperty("ShowDueTime", "false");
+        return "true".equals(val);
     }
+
+    public void setShowDueTime(boolean value) {
+        this.properties.setProperty("ShowDueTime", Boolean.toString(value));
+    }
+
     public boolean isShowOrderColumn() {
         return false;
     }
@@ -141,6 +142,21 @@ public class SettingsBean implements Serializable {
     }
     public void setLogSeverityOverride(String value) {
         this.properties.setProperty("LogSeverityOverride", value);
+    }
+
+    public String getDateFormat() {
+        return this.properties.getProperty("DateFormat", "MM/dd/yyyy");
+    }
+
+    public void setDateFormat(String value) {
+        this.properties.setProperty("DateFormat", value);
+    }
+    
+    public String getTimeFormat() {
+        return this.properties.getProperty("TimeFormat", "K:mm a");
+    }
+    public void setTimeFormat(String value) {
+        this.properties.setProperty("TimeFormat", value);
     }
 
 

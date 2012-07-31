@@ -140,15 +140,35 @@ public class LineitemHelper implements Serializable {
             //-> private
             public LineItemDueDateField(String paramName_, GCDDRequestScopeBean requestScope) {
                     super(paramName_, requestScope);
+                    value = null;
                     liHasDueDate = new LineItemField(liHasDueDateParamNameBase + LineitemHelper.this.paramIndex, requestScope);
                     isCommonDueTime = new LineItemField("isCommonDueTimeParam", requestScope);
-                    commonDueTime = new LineItemField("commonDueTimeParam_datetime", requestScope);
+                    commonDueTime = new LineItemField("commonDueTimeParam_time", requestScope);
+                    commonDueTime.value = GCDDUtil.fixTimeString(commonDueTime.value);
             }
 
             void checkAndSetInternal() throws Exception {
                     Calendar saved_due_date = LineitemHelper.this.lineitem.getDueDate();
                     GCDDLog.logForward(LogService.Verbosity.INFORMATION, "saved_due_date: " + saved_due_date, this);
-                    Calendar due_date = GCDDUtil.dateStringToCalendar(value);
+
+                    String val_date = requestScope.getRequest().getParameter(paramName + "_date");
+                    GCDDLog.logForward(LogService.Verbosity.INFORMATION, "val_date: " + val_date, this);
+                    String val_time = requestScope.getRequest().getParameter(paramName + "_time");
+                    GCDDLog.logForward(LogService.Verbosity.INFORMATION, "val_time: " + val_time, this);
+                    val_time = GCDDUtil.fixTimeString(val_time);
+                    GCDDLog.logForward(LogService.Verbosity.INFORMATION, "fixed val_time: " + val_time, this);
+                    Calendar due_date = null;
+                    if (! GCDDUtil.isStringBlank(val_date)) {
+                        if (! requestScope.getSettings().isShowDueTime()
+                                || isCommonDueTime.value.equals("on")) {
+                            due_date = GCDDUtil.dateStringToCalendar(val_date, requestScope.getSettings().getDateFormat());
+                        } else {
+                            due_date = GCDDUtil.dateStringToCalendar(val_date + " " + val_time,
+                                    requestScope.getSettings().getDateFormat()
+                                    + " " + requestScope.getSettings().getTimeFormat());
+                        }
+                    } 
+                    
                     if (requestScope.getSettings().isShowHasDueDateColumn()) {
                         GCDDLog.logForward(LogService.Verbosity.INFORMATION, "liHasDueDate.value: " + liHasDueDate.value, this);
                         if (liHasDueDate.value.equals("on")) {
@@ -172,18 +192,23 @@ public class LineitemHelper implements Serializable {
                             return;
                         }
                     } else {
-                        Calendar common_duetime = requestScope.getSettings().getCommonDueTime();
-                        if (requestScope.getSettings().isShowCommonDueTime()) {
+                        Calendar common_duetime = null;
+                        
+                        if (requestScope.getSettings().isShowDueTime()) {
                                 if (isCommonDueTime.value.equals("on")) {
-                                    common_duetime = DbUtil.stringToCalendar(commonDueTime.value);
+                                    common_duetime = GCDDUtil.dateStringToCalendar(commonDueTime.value, 
+                                            requestScope.getSettings().getTimeFormat());
                                 }
-                        }
+                        } else common_duetime = requestScope.getSettings().getCommonDueTime();
 
-                        GCDDLog.logForward(LogService.Verbosity.DEBUG, "common_duetime: " + common_duetime.toString(), this);
-                        due_date.set(Calendar.MILLISECOND, common_duetime.get(Calendar.MILLISECOND));
-                        due_date.set(Calendar.SECOND, common_duetime.get(Calendar.SECOND));
-                        due_date.set(Calendar.MINUTE, common_duetime.get(Calendar.MINUTE));
-                        due_date.set(Calendar.HOUR_OF_DAY, common_duetime.get(Calendar.HOUR_OF_DAY));
+                        if (! requestScope.getSettings().isShowDueTime()
+                                || isCommonDueTime.value.equals("on")) {
+                            GCDDLog.logForward(LogService.Verbosity.DEBUG, "common_duetime: " + common_duetime.toString(), this);
+                            due_date.set(Calendar.MILLISECOND, common_duetime.get(Calendar.MILLISECOND));
+                            due_date.set(Calendar.SECOND, common_duetime.get(Calendar.SECOND));
+                            due_date.set(Calendar.MINUTE, common_duetime.get(Calendar.MINUTE));
+                            due_date.set(Calendar.HOUR_OF_DAY, common_duetime.get(Calendar.HOUR_OF_DAY));
+                        }
                         GCDDLog.logForward(LogService.Verbosity.INFORMATION, "due_date: " + due_date, this);
                         if ( saved_due_date == null) {
                                 GCDDLog.logForward(LogService.Verbosity.INFORMATION, "getOutcomeDefinition().getDueDate() == null -> LineitemHelper.this.lineitem.getOutcomeDefinition().setDueDate(due_date);", this);
@@ -199,25 +224,37 @@ public class LineitemHelper implements Serializable {
         } //private class  LineItemDueDate extends LineItemField {
 
         public class  LineItemDueDateFieldForPeriod extends LineItemField {
-                GCDDRequestScopeBean requestScope;
                 public LineItemDueDateFieldForPeriod(String paramName_, GCDDRequestScopeBean requestScope) {
                         super(paramName_, requestScope);
-                        this.requestScope = requestScope;
                 }
 
                 void checkAndSetInternal() throws Exception {
-                        if ("".equals(value)) return;
+                        String val_date = requestScope.getRequest().getParameter(paramName + "_date");
+                        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "val_date: " + val_date, this);
+                        String val_time = requestScope.getRequest().getParameter(paramName + "_time");
+                        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "fixed val_time: " + val_time, this);
+                        GCDDUtil.fixTimeString(val_time);
+                        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "val_time: " + val_time, this);
+
                         Calendar saved_due_date = LineitemHelper.this.lineitem.getDueDate();
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "saved_due_date: " + saved_due_date, this);
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "value: " + value, this);
-                        Calendar due_date = GCDDUtil.dateStringToCalendar(value);
+
+                        Calendar due_date = null;
+                        if (requestScope.getSettings().isShowDueTime()) {
+                            due_date = GCDDUtil.dateStringToCalendar(val_date + " " + val_time, 
+                                    requestScope.getSettings().getDateFormat() 
+                                    + " " + requestScope.getSettings().getTimeFormat());
+                        } else due_date = GCDDUtil.dateStringToCalendar(val_date, requestScope.getSettings().getDateFormat());
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "due_date: " + due_date, this);
-                        Calendar common_duetime = requestScope.getSettings().getCommonDueTime();
-                        GCDDLog.logForward(LogService.Verbosity.DEBUG, "common_duetime: " + common_duetime.toString(), this);
-                        due_date.set(Calendar.MILLISECOND, common_duetime.get(Calendar.MILLISECOND));
-                        due_date.set(Calendar.SECOND, common_duetime.get(Calendar.SECOND));
-                        due_date.set(Calendar.MINUTE, common_duetime.get(Calendar.MINUTE));
-                        due_date.set(Calendar.HOUR_OF_DAY, common_duetime.get(Calendar.HOUR_OF_DAY));
+                        if (! requestScope.getSettings().isShowDueTime()) {
+                            Calendar common_duetime = requestScope.getSettings().getCommonDueTime();
+                            GCDDLog.logForward(LogService.Verbosity.DEBUG, "common_duetime: " + common_duetime.toString(), this);
+                            due_date.set(Calendar.MILLISECOND, common_duetime.get(Calendar.MILLISECOND));
+                            due_date.set(Calendar.SECOND, common_duetime.get(Calendar.SECOND));
+                            due_date.set(Calendar.MINUTE, common_duetime.get(Calendar.MINUTE));
+                            due_date.set(Calendar.HOUR_OF_DAY, common_duetime.get(Calendar.HOUR_OF_DAY));
+                        }
                         GCDDLog.logForward(LogService.Verbosity.DEBUG, "due_date: " + due_date, this);
                         if ( saved_due_date == null) {
                             GCDDLog.logForward(LogService.Verbosity.DEBUG, "getOutcomeDefinition().getDueDate() == null -> LineitemHelper.this.lineitem.getOutcomeDefinition().setDueDate(due_date);", this);

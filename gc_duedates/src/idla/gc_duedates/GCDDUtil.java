@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Date;
 
 
+
 /**
  * Static utility functions for
  * a) logging of request parameters
@@ -72,12 +73,13 @@ public class GCDDUtil {
         // perform a check based on course membership:
         CourseMembership c_mem 
                 = requestScope.getCourseMembershipDbLoader().loadByCourseAndUserId(requestScope.getCourseId(), requestScope.getSessionUser().getId());
-        boolean do_deny = false;
-        if(c_mem == null) do_deny = true;
-        else if (c_mem.getRole() != CourseMembership.Role.INSTRUCTOR
-                        && c_mem.getRole() != CourseMembership.Role.TEACHING_ASSISTANT
-                        && c_mem.getRole() != CourseMembership.Role.COURSE_BUILDER) {
-                do_deny = true;
+        boolean do_deny = true;
+        if(c_mem != null) {
+            blackboard.platform.security.CourseRole c_role = c_mem.getRole().getDbRole();
+            if (c_mem.getRole() == CourseMembership.Role.INSTRUCTOR
+                        || c_mem.getRole() == CourseMembership.Role.TEACHING_ASSISTANT
+                        || c_mem.getRole() == CourseMembership.Role.COURSE_BUILDER
+                        || c_role.isActAsInstructor()) do_deny = false;
         }
         if (do_deny) PlugInUtil.sendAccessDeniedRedirect(requestScope.getRequest(), requestScope.getResponse());
         return !do_deny;
@@ -91,15 +93,31 @@ public class GCDDUtil {
         return txt.compareToIgnoreCase(otherTxt);
     }
 
-    public static Calendar dateStringToCalendar(String strCal) throws ParseException {
-        if ("".equals(strCal)) return null;
-        SimpleDateFormat _sdf = new SimpleDateFormat("MM/dd/yyyy");
+    public static boolean isStringBlank (String str) {
+        if (str == null) return true;
+        if ("".equals(str.trim())) return true;
+        return false;
+    }
+    public static Calendar dateStringToCalendar(String dateStr, String formatStr) throws ParseException {
+        //if (isStringBlank(dateStr)) return null;
+        //DbUtil.stringToCalendar(value);
+        if (isStringBlank(dateStr)) throw new java.text.ParseException("Unparseable date: " + dateStr, 0);
+        SimpleDateFormat _sdf = new SimpleDateFormat(formatStr);
         Calendar cal;
-        Date date = _sdf.parse(strCal);
+        Date date = _sdf.parse(dateStr);
         cal = Calendar.getInstance();
         cal.setTime(date);
         return cal;
     }
+
+    public static String fixTimeString (String str) {
+        if (isStringBlank(str)) return null;
+        if (str.trim().startsWith("12")) {
+            str = "0" + str.trim().substring(2);
+        }
+        return str;
+    }
+
     public static String constructExceptionMessage(Throwable e) {
         GCDDLog.logForward(LogService.Verbosity.DEBUG, "Entered BbWsUtil.constructExceptionMessage() ");
         String msg = e.toString();
