@@ -37,15 +37,15 @@ public class GCDDRequestScopeBean implements Serializable {
     private SettingsBean settings;
     
     public GCDDRequestScopeBean () {
-        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "Entered GCDDBlackboardAccessBean.GCDDBlackboardAccessBean()", this);
+        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "GCDDRequestScopeBean(): Entered", this);
     }
     public void init(HttpSession session, HttpServletRequest request, 
                     HttpServletResponse response, SettingsBean settings) throws Exception {
-        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "Entered GCDDBlackboardAccessBean.init()", this);
+        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "init(): Entered", this);
 
 	String course_id_param = request.getParameter("course_id");
 	request.getSession().setAttribute("course_id", course_id_param);
-	GCDDLog.logForward(LogService.Verbosity.INFORMATION, "request.getParameter(\"course_id\"): " + course_id_param, this);
+	GCDDLog.logForward(LogService.Verbosity.INFORMATION, "init(): request.getParameter(\"course_id\"): " + course_id_param, this);
 
 	this.persistenceManager = PersistenceServiceFactory.getInstance().getDbPersistenceManager();
         this.courseId = this.persistenceManager.generateId(Course.DATA_TYPE, course_id_param);
@@ -54,8 +54,10 @@ public class GCDDRequestScopeBean implements Serializable {
         this.context = ContextManagerFactory.getInstance().getContext();
         String user_name = null;
         this.sessionUser = context.getUser();
-        if (sessionUser != null) user_name = this.sessionUser.getUserName();
-        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "sessionUser.getUserName(): " + user_name, this);
+        if (this.sessionUser == null)
+                throw new GCDDException("Failed to obtain User object from Context.");
+        user_name = this.sessionUser.getUserName();
+        GCDDLog.logForward(LogService.Verbosity.INFORMATION, "init(): sessionUser.getUserName(): " + user_name, this);
 
         this.courseMembershipDbLoader = CourseMembershipDbLoader.Default.getInstance();
         this.session = session;

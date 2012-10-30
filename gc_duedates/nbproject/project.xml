@@ -7,10 +7,10 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <web-module-libraries>
                 <library>
-                    <file>${file.reference.bb-taglibs.jar}</file>
+                    <file>${libs.jstl11.classpath}</file>
                 </library>
                 <library>
-                    <file>${libs.jstl11.classpath}</file>
+                    <file>${file.reference.bb-taglibs.jar}</file>
                 </library>
                 <library>
                     <file>${file.reference.bb-platform.jar}</file>
