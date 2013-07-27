@@ -1,0 +1,193 @@
+
+//*** Users
+_click(_span("System Admin"));
+_click(_link("Users"));
+//****** student_010
+_click(_link("Create User"));
+_setValue(_textbox("firstName"), "student_010_fn");
+_setValue(_textbox("lastName"), "student_010_ln");
+_setValue(_textbox("userName"), "student_010");
+_setValue(_password("password_input"), "student_010");
+_setValue(_password("verifyPassword"), "student_010");
+_click(_submit("Submit[1]"));
+_expectConfirm("Email address is a recommended field. Users will be unable to use parts of the system without an email address.", true);
+//****** teacher_010
+_click(_link("Create User"));
+_setValue(_textbox("firstName"), "teacher_010_fn");
+_setValue(_textbox("lastName"), "teacher_010_ln");
+_setValue(_textbox("userName"), "teacher_010");
+_setValue(_password("password_input"), "teacher_010");
+_setValue(_password("verifyPassword"), "teacher_010");
+_setSelected(_select("availableRoles"), ["Staff"]);
+_click(_image("Move selected item to the Primary Institution Role box"));
+_click(_submit("Submit[1]"));
+
+//*** Classes
+//****** Class_010
+_click(_span("System Admin"));
+_click(_link("Classes"));
+_click(_link("New"));
+_setValue(_textbox("courseName"), "Class_010");
+_setValue(_textbox("courseId"), "Class_010_ID");
+_click(_submit("Submit[1]"));
+
+//*** Enrollments
+_click(_span("System Admin"));
+_click(_link("Classes"));
+_setSelected(_select("courseInfoSearchOperatorString"), "Not blank");
+_click(_submit("Go"));
+_click(_image("Options Menu: Class ID", _near(_link("Class_010_ID"))));
+_click(_link("Enrollments")); 
+_click(_link("Enroll Users"));
+_setValue(_textbox("userName"), "student_010");
+_setSelected(_select("courseRoleId"), "Student");
+_click(_submit("Submit"));
+_click(_link("Enroll Users"));
+_setValue(_textbox("userName"), "teacher_010");
+_setSelected(_select("courseRoleId"), "Teacher");
+_click(_submit("Submit"));
+_click(_link("Enroll Users"));
+_setValue(_textbox("userName"), "Administrator");
+_setSelected(_select("courseRoleId"), "Class Builder");
+_click(_submit("Submit"));
+
+//*** Tool Availability
+_click(_link("/.*/", _in(_cell("Courses.label"))));
+_click(_link("Class_010_ID: Class_010"));
+_click(_link("Customization"));
+_click(_link("Tool Availability"));
+_check(_checkbox("/available.*/", _rightOf(_tableHeader("Grade Center Due Dates")))); 
+//_check(_checkbox("/available.*/", _near(_label("Available - Grade Center Due Dates")))); //+
+_click(_submit("Submit"));
+
+//*** Content
+_click(_link("/.*/", _in(_cell("Courses.label"))));
+_click(_link("Class_010_ID: Class_010"));
+_click(_span("Content"));
+//Test_010
+_click(_link("Test"));
+_click(_link("Create"));
+_setValue(_textbox("name"), "Test_010");
+_call(setTMEContent("descriptiontext", "Test_010_desc"));
+_call(setTMEContent("instructionstext", "Test_010_instr"));
+_click(_submit("Submit"));
+_click(_link("OK"));
+_setSelected(_select("assessmentId"), "Test_010");
+_click(_submit("Submit"));
+_click(_radio("fIsLinkVisible1"));
+_click(_submit("Submit"));
+
+//Survey_010
+_click(_link("Survey"));
+_click(_link("Create"));
+_setValue(_textbox("name"), "Survey_010");
+_call(setTMEContent("descriptiontext", "Survey_010_desc"));
+_call(setTMEContent("instructionstext", "Survey_010_instr"));
+_click(_submit("Submit"));
+_click(_link("OK"));
+_setSelected(_select("assessmentId"), "Survey_010");
+_click(_submit("Submit"));
+_click(_radio("fIsLinkVisible1"));
+_click(_submit("Submit"));
+
+
+//Assignment_010
+_click(_link("Assignment"));
+_setValue(_textbox("contentName"), "Assignment_010");
+_call(setTMEContent("content_desc_text", "Assignment_010_instr"));
+_setValue(_textbox("possible"), "100");
+_check(_checkbox("isAvailable"));
+_click(_submit("Submit"));
+
+//SPAssessment_010
+_click(_link("/Self and Peer Assessment.*/", _in(_div("evaMenu"))));
+_setValue(_textbox("title"), "SPAssessment_010");
+_call(setTMEContent("description_text", "SPAssessment_010_instr"));
+_click(_radio("isAvailable_true"));
+_click(_submit("Submit"));
+_click(_link("OK"));
+_click(_link("OK"));
+
+
+//GC Columns
+_click(_link("/.*/", _in(_cell("Courses.label"))));
+_click(_link("Class_010_ID: Class_010"));
+_click(_link("Grade Center"));
+_click(_link("Full Grade Center"));
+
+//GCC_NoCategory_010
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_NoCategory_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_NoCategory_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_NoCategory_010_desc"));
+_setSelected(_select("categoryId"), "No Category");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+//GCC_Assignment_010
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_Assignment_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_Assignment_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_GCC_Assignment_010_desc"));
+_setSelected(_select("categoryId"), "Assignment");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_Survey_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_Survey_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_Survey_010_desc"));
+_setSelected(_select("categoryId"), "Survey");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_Test_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_Test_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_Test_010_desc"));
+_setSelected(_select("categoryId"), "Test");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_Discussion_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_Discussion_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_Discussion_010_desc"));
+_setSelected(_select("categoryId"), "Discussion");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_Blog_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_Blog_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_Blog_010_desc"));
+_setSelected(_select("categoryId"), "Blog");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_Journal_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_Journal_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_Journal_010_desc"));
+_setSelected(_select("categoryId"), "Journal");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+_click(_link("Create Column"));
+_setValue(_textbox("columnName"), "GCC_SelfandPeer_010");
+_setValue(_textbox("gradebookDisplayName"), "GCC_SelfandPeer_010_gcn");
+_call(setTMEContent("descriptiontext", "GCC_SelfandPeer_010_desc"));
+_setSelected(_select("categoryId"), "Self and Peer");
+_setValue(_textbox("pointsDisplay"), "100");
+_click(_submit("Submit"));
+
+
+<browser>
+function setTMEContent(fieldName, content) {
+var wp = top.document.getElementById('contentFrame').contentWindow.tinyMceWrapper;
+var edt = wp.getEditor(fieldName);
+var tedt = edt._tinyMceEditor;
+tedt.setContent(content);
+}
+</browser>
