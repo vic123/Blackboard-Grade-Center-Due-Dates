@@ -222,6 +222,8 @@ try {
             //save modified data, set any success/warning session status and refresh page
             GCDDLog.logForward(LogService.Verbosity.INFORMATION, "Entering if (formAction.equals(\"save\")) {", this);
             int li_cnt = Integer.parseInt(request.getParameter("lineitemCountParam"));
+            if (li_cnt > settings.getMaxDueDateCount()) 
+                throw new GCDDException("Count of submitted due dates exceeds " +  Integer.toString(settings.getMaxDueDateCount()) + ". Please contact system administrator for increasing of this limit.");
             GCDDLog.logForward(LogService.Verbosity.DEBUG, "for (int i = 0; i < li_cnt; i++) {", this);
             LineitemHelper lih = null;
             String li_id_str = "not set";

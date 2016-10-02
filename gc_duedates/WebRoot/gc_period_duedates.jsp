@@ -107,6 +107,9 @@ try {
         //save modified data, set any success/warning session status and refresh page
         GCDDLog.logForward(LogService.Verbosity.INFORMATION, "Entering if (formAction.equals(\"save\")) {", this );
         int gp_cnt = Integer.parseInt(request.getParameter("gradingPeriodCountParam"));
+        if (gp_cnt > settings.getMaxGradingPeriodCount())
+            throw new GCDDException("Count of submitted grading periods exceeds " + Integer.toString(settings.getMaxGradingPeriodCount()) + ". Please contact system administrator for increasing of this limit.");
+
         GCDDLog.logForward(LogService.Verbosity.DEBUG, "for (int i = 0; i < gp_cnt; i++) {", this);
         GradingPeriodHelper gph = null;
         String gp_id_str = "not set";

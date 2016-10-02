@@ -159,5 +159,18 @@ public class SettingsBean implements Serializable {
         this.properties.setProperty("TimeFormat", value);
     }
 
+    public int getMaxDueDateCount() {
+        return Integer.parseInt(this.properties.getProperty("MaxDueDateCount", "500"));
+    }
+    public void setMaxDueDateCount(int value) {
+        this.properties.setProperty("MaxDueDateCount", Integer.toString(value));
+    }
+
+    public int getMaxGradingPeriodCount() {
+        return Integer.parseInt(this.properties.getProperty("MaxGradingPeriodCount", "100"));
+    }
+    public void setMaxGradingPeriodCount(int value) {
+        this.properties.setProperty("MaxGradingPeriodCount", Integer.toString(value));
+    }
 
 }

@@ -140,6 +140,17 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
                 </select>
             </bbNG:dataElement>
         </bbNG:step>
+	<bbNG:step hideNumber="true" title="Input validation" instructions="Maximum allowed amounts of sumbitted data">
+            <bbNG:dataElement label="Maximum count of submitted due dates:" >
+        	<bbNG:textElement name="maxDueDateCount" id="maxDueDateCount" value="${settings.maxDueDateCount}"
+                                      displayOnly="false" />
+            </bbNG:dataElement>
+            <bbNG:dataElement label="Maximum count of submitted grading periods:" >
+        	<bbNG:textElement name="maxGradingPeriodCount" id="maxGradingPeriodCount" value="${settings.maxGradingPeriodCount}"
+                                      displayOnly="false" />
+            </bbNG:dataElement>
+	</bbNG:step>
+
   <bbNG:stepSubmit hideNumber="true" title="Submit" cancelUrl="/webapps/blackboard/admin/manage_plugins.jsp"
   	instructions="Click Submit to save and reload. Cancel acts as browser's back button."/>
 <%
