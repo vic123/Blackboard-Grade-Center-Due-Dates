@@ -49,7 +49,6 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
         PlugInUtil.sendAccessDeniedRedirect(request, response);
         return;
     }
-
     PAGE_TITLE = "Grade Center Due Dates Settings";
     ICON_URL = PlugInUtil.getUri(GCDDConstants.VENDOR_ID, GCDDConstants.HANDLE, "DueDates.jpg");
 
@@ -77,7 +76,7 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
 		} else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
 		ro.addMessage(rm);
 		request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
-                String formURL = request.getRequestURL().toString();
+                String formURL = "settings.jsp";
 		GCDDLog.logForward(LogService.Verbosity.DEBUG, "response.sendRedirect(), formURL: " + formURL);
 		response.sendRedirect(formURL);
 		return;

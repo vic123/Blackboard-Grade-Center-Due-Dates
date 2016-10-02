@@ -176,11 +176,6 @@ try {
         } else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
         ro.addMessage(rm);
         request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
-        //logForward(LogService.Verbosity.DEBUG, "response.sendRedirect" + formURL + "&uuid=" + sessionTag.randomUUID);
-        //String formURL = requestScope.getRequest().getRequestURL().toString()
-        //        + "?course_id=" + requestScope.getCourseId().toExternalString();
-        //GCDDLog.logForward(LogService.Verbosity.DEBUG, "response.sendRedirect(), formURL: " + formURL, this);
-        //response.sendRedirect(formURL);
         response.sendRedirect(requestScope.getIndividualDueDatesURL());
 
         return;

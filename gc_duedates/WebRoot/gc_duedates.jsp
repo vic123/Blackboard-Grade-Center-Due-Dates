@@ -280,10 +280,8 @@ try {
             } else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
             ro.addMessage(rm);
             request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
-            //logForward(LogService.Verbosity.DEBUG, "response.sendRedirect" + formURL + "&uuid=" + sessionTag.randomUUID);
             // Retrieve the course identifier from the URL and construct formURL for response.sendRedirect(formURL) to itself
-            String formURL = request.getRequestURL().toString() + "?course_id="
-                    + requestScope.getCourseId().toExternalString();
+            String formURL = requestScope.getIndividualDueDatesURL();
             if ("on".equals(requestScope.getRequest().getParameter("isCommonDueTimeParam"))) {
               formURL = formURL + "&isCommonDueTimeParam=on";
             }
@@ -551,6 +549,7 @@ try {
 
                     </bbNG:inventoryList>
                 </bbNG:step>
+
 	<!-- cancelUrl="gc_duedates.jsp" -->
 	<!--  Cancel will bring us out of the form (back), only submit (and refresh?) will refresh it here - actually temp solution, has to be implemented with javascript-->
   <bbNG:stepSubmit title="Submit" hideNumber="true"
