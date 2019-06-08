@@ -19,6 +19,7 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
                 blackboard.data.user.*,
                 blackboard.data.ReceiptOptions,
                 blackboard.data.ReceiptMessage,
+                blackboard.platform.servlet.InlineReceiptUtil,
                 blackboard.servlet.tags.InlineReceiptTag,
                 blackboard.platform.log.LogService,
                 blackboard.platform.plugin.PlugInUtil,
@@ -75,7 +76,7 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
 								ReceiptMessage.messageTypeEnum.WARNING);
 		} else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
 		ro.addMessage(rm);
-		request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
+		request.getSession().setAttribute(InlineReceiptUtil.RECEIPT_KEY, ro);
                 String formURL = "settings.jsp";
 		GCDDLog.logForward(LogService.Verbosity.DEBUG, "response.sendRedirect(), formURL: " + formURL);
 		response.sendRedirect(formURL);
