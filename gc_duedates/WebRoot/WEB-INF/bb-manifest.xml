@@ -5,7 +5,7 @@
     <name value= "Grade Center Due Dates"/>
     <handle value= "gradecenter_duedates"/>
     <description value= "Grade Center Due Dates"/>
-    <version value= "0.9.38"/>
+    <version value= "1.0.0"/>
     
     <requires>
     	<bbversion value="9.1.50119.0"/>
@@ -41,7 +41,7 @@
 		  <link>
             <type value="course_tool"/>
             <!--<type value="gradebook_extension"/>-->
-            <name value="Set Grade Center Due Dates"/>
+            <name value="Grade Center Due Dates"/>
             <url value="gc_duedates.jsp" />
             <description value="Grade Center Due Dates" />
           </link>

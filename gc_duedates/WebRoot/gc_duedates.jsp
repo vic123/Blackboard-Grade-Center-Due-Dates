@@ -32,7 +32,7 @@ inventoryList is created without vertical scroll bar
 				blackboard.platform.plugin.PlugInUtil,
                                 blackboard.platform.log.LogService,
                                 blackboard.persist.Id,
-                                blackboard.servlet.tags.InlineReceiptTag,
+                                blackboard.platform.servlet.InlineReceiptUtil,
                                 blackboard.platform.gradebook2.GradebookType,
                                 blackboard.platform.gradebook2.impl.GradebookTypeDAO,
                                 idla.gc_duedates.GCDDLog,
@@ -279,7 +279,7 @@ try {
                                                             ReceiptMessage.messageTypeEnum.WARNING);
             } else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
             ro.addMessage(rm);
-            request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
+            request.getSession().setAttribute(InlineReceiptUtil.RECEIPT_KEY, ro);
             // Retrieve the course identifier from the URL and construct formURL for response.sendRedirect(formURL) to itself
             String formURL = requestScope.getIndividualDueDatesURL();
             if ("on".equals(requestScope.getRequest().getParameter("isCommonDueTimeParam"))) {

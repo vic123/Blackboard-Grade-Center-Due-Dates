@@ -22,7 +22,7 @@ Bug 172334 - is already defined in SimplifiedJSPServlet error
                 blackboard.data.user.*,
                 blackboard.data.ReceiptOptions,
                 blackboard.data.ReceiptMessage,
-                blackboard.servlet.tags.InlineReceiptTag,
+                blackboard.platform.servlet.InlineReceiptUtil,
                 blackboard.platform.log.LogService,
                 blackboard.platform.plugin.PlugInUtil,
                 blackboard.platform.context.Context,
@@ -175,7 +175,7 @@ try {
                                                         ReceiptMessage.messageTypeEnum.WARNING);
         } else rm = new ReceiptMessage("Changes Saved", ReceiptMessage.messageTypeEnum.SUCCESS);
         ro.addMessage(rm);
-        request.getSession().setAttribute(InlineReceiptTag.RECEIPT_KEY, ro);
+        request.getSession().setAttribute(InlineReceiptUtil.RECEIPT_KEY, ro);
         response.sendRedirect(requestScope.getIndividualDueDatesURL());
 
         return;
